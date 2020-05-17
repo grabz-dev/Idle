@@ -1,0 +1,92 @@
+body {
+    background-color: black;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.ui {
+    display: flex;
+    flex-flow: row nowrap;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.ui .parent {
+    display: flex;
+}
+.ui .parent.row {
+    flex-flow: row nowrap;
+}
+.ui .parent.col {
+    flex-flow: column nowrap;
+}
+.ui .parent.wrap {
+    flex-wrap: wrap;
+}
+
+.ui .child {
+    flex: 1 0 auto;
+}
+
+.ui .panel {
+    border: 1px solid black;
+    box-sizing: content-box;
+    background-color: rgba(155, 62, 0, 0.9);
+    box-shadow: 2px 2px;
+    
+}
+.ui .edge {
+    padding: 0.6vw;
+    margin: 0.6vw;
+}
+.ui .edge.no-top {
+    margin-top: 0;
+}
+.ui .edge.no-bottom {
+    margin-bottom: 0;
+}
+.ui .edge.no-left {
+    margin-left: 0;
+}
+.ui .edge.no-right {
+    margin-right: 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.ui .child.left-1 {
+    flex: 0 0 300px;
+    margin-right: 0;
+}
+.ui .child.middle-1 {
+    flex: 2 0 auto;
+    justify-content: center;
+}
+.ui .child.right-1 {
+    margin-left: 0;
+}
+
+.ui .child.top-1-3 {
+    flex: 4 0 auto;
+}
+.ui .child.bottom-1-3 {
+    flex: 0 0 20%;
+}

@@ -1,0 +1,118 @@
+#wrap, #ui {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+#grass {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 45%;
+    background-image: url('./../images/grass.png');
+    background-size: 256px;
+    image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
+    image-rendering: -moz-crisp-edges;          /* Firefox                        */
+    image-rendering: -o-crisp-edges;            /* Opera                          */
+    image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
+    image-rendering: pixelated; /* Chrome */
+    image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */
+}
+
+#dim {
+    width: 100%;
+    height: 100%;
+    background-color: black;
+}
+
+#enemies {
+    position: relative;
+    flex: 0 0 460px;
+    height: 460px;
+    border: 1px solid black;
+}
+
+#enemies > div {
+    position: absolute;
+    width: 10%;
+    height: 10%;
+    border: 1px solid red;
+}
+
+.enemy .bar.outer {
+    height: 20%;
+    background-color: red;
+    overflow: hidden;
+}
+
+.enemy .bar.inner {
+    height: 100%;
+    background-color: green;
+    transition: transform 300ms ease-out;
+}
+
+#backpack, #pouch {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.item::before {
+    padding-top: 100%;
+    content: "";
+    display: block;
+}
+
+.item {
+    --margin: 2px;
+    --border: 1px;
+
+    position: relative;
+
+    background-color: #ca9147;
+
+    float: left;
+    box-sizing: content-box;
+    border: var(--border) solid black;
+    width: calc(16.6666% - var(--margin) * 2 - var(--border) * 2);
+    margin: var(--margin);
+}
+
+.item * {
+    pointer-events: none;
+}
+
+.item .box {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+}
+
+.item .box.left {
+    text-align: left;
+}
+.item .box.right {
+    text-align: right;
+}
+
+.item .box .text {
+    display: none;
+    position: relative;
+    font-size: 12px;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.item .box .text .icon {
+    display: block;
+    width: 12px;
+}
+.item .box.left .text .icon {
+    float: left;
+}
+.item .box.right .text .icon {
+    float: right;
+}
+
