@@ -25,10 +25,20 @@ export default class CItems extends Controller {
         }
 
         for(let entry of Object.entries(save.items)) {
-            for(let item of entry[1]) {
-                data.items.set(item, entry[0]);
+            let holderName = entry[0];
+            let items = entry[1];
+
+            for(let item of items) {
+                for(let v of data.itemHolders) {
+                    if(v === holderName) {
+                        data.itemsToHolders.set(item, holderName);
+                        break;
+                    }
+                }
             }
         }
+
+        this.game.controller.cPlayer.calculateStats();
     }
 
     /**
@@ -42,47 +52,117 @@ export default class CItems extends Controller {
     /**
      * 
      * @param {MItem[]} items
-     * @param {string} holder 
+     * @param {'backpack'|'pouch'|'equipment'} holderName 
      */
-    addItems(items, holder) {
+    addItems(items, holderName) {
         const data = this.game.model.data;
         const save = this.game.model.save;
+        
+        /** @type {MItem[]|undefined} */
+        let holder = save.items[holderName];
 
-        if(save.items[holder] == null) {
-            console.error('CItems.addItems bad holder', holder);
+        if(holder == null) {
+            console.error('CItems.addItems bad holder', holderName);
             return;
         }
-        save.items[holder].push(...items);
-        this.game.view.vItems.onItemsAdded([...items], holder);
+
+        if(holderName === 'backpack' && items.length + holder.length > data.items[holderName]) {
+            holder.sort((a, b) => b.getValue() - a.getValue());
+            let deleted = holder.splice(10, holder.length);
+            this.game.view.vItems.onItemsRemoved(deleted, holderName);
+        }
+
+        for(let i = 0; i < items.length; i++) {
+            let item = items[i];
+
+            if(holder.length >= data.items[holderName]) {
+                items.splice(i, items.length);
+                break;
+            }
+
+            data.itemsToHolders.set(item, holderName);
+            holder.push(item);
+        }
+
+        this.game.view.vItems.onItemsAdded([...items], holderName);
+        if(holderName === 'equipment')
+            this.game.controller.cPlayer.calculateStats();
+    }
+
+    /**
+     * 
+     * @param {MItem[]} items
+     * @param {'backpack'|'pouch'|'equipment'} holderName 
+     */
+    removeItems(items, holderName) {
+        const data = this.game.model.data;
+        const save = this.game.model.save;
+        
+        /** @type {MItem[]|undefined} */
+        let holder = save.items[holderName];
+
+        if(holder == null) {
+            console.error('CItems.removeItems bad holder', holderName);
+            return;
+        }
+
+        for(let i = 0; i < items.length; i++) {
+            let item = items[i];
+
+            if(holder.length >= data.items[holderName]) {
+                items.splice(i, items.length);
+                break;
+            }
+
+            data.itemsToHolders.delete(item);
+            holder.splice(holder.indexOf(item), 1);
+        }
+
+        this.game.view.vItems.onItemsRemoved([...items], holderName);
+        if(holderName === 'equipment')
+            this.game.controller.cPlayer.calculateStats();
     }
     
     /**
      * 
      * @param {MItem[]} items 
-     * @param {string} newHolder 
+     * @param {'backpack'|'pouch'|'equipment'} holderName 
      */
-    moveItems(items, newHolder) {
+    moveItems(items, holderName) {
         const data = this.game.model.data;
         const save = this.game.model.save;
 
-        if(save.items[newHolder] == null) {
-            console.error('CItems.moveItems bad holder', newHolder);
+        /** @type {MItem[]|undefined} */
+        let holder = save.items[holderName];
+
+        if(holder == null) {
+            console.error('CItems.moveItems bad holder', holderName);
             return;
         }
 
-        for(let item of items) {
-            let oldHolder = data.items.get(item);
-            if(oldHolder == null || oldHolder === newHolder) {
-                
+        for(let i = 0; i < items.length; i++) {
+            let item = items[i];
+            
+            let oldHolderName = data.itemsToHolders.get(item);
+            if(oldHolderName == null || oldHolderName === holderName) {
                 continue;
             }
-            
-            data.items.set(item, newHolder);
-            save.items[oldHolder].splice(save.items[oldHolder].indexOf(item), 1);
-            save.items[newHolder].push(item);
+
+            console.log(holder.length, data.items[holderName]);
+
+            if(holder.length >= data.items[holderName]) {
+                items.splice(i, items.length);
+                break;
+            }
+
+            data.itemsToHolders.set(item, holderName);
+            save.items[oldHolderName].splice(save.items[oldHolderName].indexOf(item), 1);
+            holder.push(item);
         }
         
-        this.game.view.vItems.onItemsMoved([...items], newHolder);
+        this.game.view.vItems.onItemsMoved([...items], holderName);
+        if(holderName === 'equipment')
+            this.game.controller.cPlayer.calculateStats();
     }
 }
 

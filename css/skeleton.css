@@ -77,11 +77,16 @@ body {
     margin-right: 0;
 }
 .ui .child.middle-1 {
-    flex: 2 0 auto;
+    flex: 0 1 60%;
     justify-content: center;
 }
 .ui .child.right-1 {
+    flex: 0 1 40%;
     margin-left: 0;
+}
+
+.ui .child.bottom-1-1 {
+    flex: 0 0 20%;
 }
 
 .ui .child.top-1-3 {

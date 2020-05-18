@@ -1,6 +1,6 @@
 import Model from './../Model.js';
 
-export default class Timer extends Model {
+export default class MTimer extends Model {
     /**
      * 
      * @param {number} max - Time in seconds. 
@@ -9,6 +9,7 @@ export default class Timer extends Model {
         super('MTimer.js');
 
         this.max = max;
+        /** @type {number} */
         this.timer = 0;
         this.done = false;
 
@@ -27,7 +28,7 @@ export default class Timer extends Model {
     }
 
     /**
-     * @param {object} obj 
+     * @param {any} obj 
      */
     deserialize(obj) {
         this.max = obj.max;

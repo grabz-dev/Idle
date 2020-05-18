@@ -3,6 +3,12 @@
 
 import MTimer from './Model/MTimer.js';
 
+class Save {
+    constructor() {
+        
+    }
+}
+
 export default class Data {
     constructor() {
         this.save = {
@@ -10,10 +16,15 @@ export default class Data {
             tutorial: {
                 givenStarterItems: false
             },
+            wave: 0,
             enemies: /** @type {MEnemy[]} */([]),
             items: {
                 backpack: /** @type {MItem[]} */([]),
-                pouch: /** @type {MItem[]} */([])
+                pouch: /** @type {MItem[]} */([]),
+                equipment: /** @type {MItem[]} */([])
+            },
+            player: {
+                curHealth: 0
             },
             battleTimer: new MTimer(1)
         };
@@ -23,7 +34,17 @@ export default class Data {
                 x: 0,
                 y: 0
             },
-            items: /** @type {Map<MItem, string>} */(new Map())
+            itemHolders: /** @type {['backpack', 'pouch', 'equipment']} */(['backpack', 'pouch', 'equipment']),
+            itemsToHolders: /** @type {Map<MItem, 'backpack'|'pouch'|'equipment'>} */(new Map()),
+            items: {
+                backpack: 20,
+                pouch: 6,
+                equipment: 3
+            },
+            player: {
+                baseHealth: 10,
+                maxHealth: 0
+            }
         };
     }
 

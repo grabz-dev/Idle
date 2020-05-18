@@ -33,7 +33,7 @@ export default class Color extends Model {
     }
 
     /**
-     * @param {object} obj 
+     * @param {any} obj
      */
     deserialize(obj) {
         this.r = obj.r;
@@ -75,21 +75,19 @@ Color.RGBtoHEX = function(color) {
  * @returns {{h: number, s: number, v: number}}
  */
 Color.RGBtoHSV = function(color) {
-    let rabs, gabs, babs, rr, gg, bb, h=0, s, v, diff, diffc, percentRoundFn;
+    let rabs, gabs, babs, rr, gg, bb, h=0, s, v, diff;
     rabs = color.r / 255;
     gabs = color.g / 255;
     babs = color.b / 255;
     v = Math.max(rabs, gabs, babs),
     diff = v - Math.min(rabs, gabs, babs);
-    diffc = c => (v - c) / 6 / diff + 1 / 2;
-    percentRoundFn = num => Math.round(num * 100) / 100;
     if (diff == 0) {
         h = s = 0;
     } else {
         s = diff / v;
-        rr = diffc(rabs);
-        gg = diffc(gabs);
-        bb = diffc(babs);
+        rr = diffc(rabs, v, diff);
+        gg = diffc(gabs, v, diff);
+        bb = diffc(babs, v, diff);
 
         if (rabs === v) {
             h = bb - gg;
@@ -160,3 +158,23 @@ Color.interpolateHSV = function(h1, s1, v1, h2, s2, v2, at) {
         v: Math.round((v2 - v1) * at + v1)
     };
 };
+
+/**
+ * 
+ * @param {number} c 
+ * @param {number} v 
+ * @param {number} diff
+ * @returns {number} 
+ */
+function diffc(c, v, diff) {
+    return (v - c) / 6 / diff + 1 / 2;
+}
+
+/**
+ * 
+ * @param {number} num
+ * @returns {number} 
+ */
+function percentRoundFn(num) {
+    return Math.round(num * 100) / 100;
+}

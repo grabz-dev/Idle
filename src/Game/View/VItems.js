@@ -12,12 +12,15 @@ export default class VItems extends View {
      * @param {number} updateInterval
      * @param {{
         backpack: HTMLElement,
-        pouch: HTMLElement
+        pouch: HTMLElement,
+        equipment: HTMLElement
     }} elems
      */
     constructor(game, updateInterval, elems) {
         super(game, updateInterval);
         this.elems = elems;
+        
+        const data = this.game.model.data;
 
         /** @type {Map<MItem, HTMLElement>} */
         this.itemsToElems = new Map();
@@ -26,7 +29,8 @@ export default class VItems extends View {
 
         this.itemHoldersToElems = {
             backpack: this.elems.backpack,
-            pouch: this.elems.pouch
+            pouch: this.elems.pouch,
+            equipment: this.elems.equipment
         };
 
         /** @type {null|HTMLElement} */
@@ -34,13 +38,15 @@ export default class VItems extends View {
         this.itemHeldX = 0;
         this.itemHeldY = 0;
 
-        /** @type {Map<HTMLElement, string>} */
+        /** @type {Map<HTMLElement, 'backpack'|'pouch'|'equipment'>} */
         this.elemsToItemHolders = new Map();
         for(let entry of Object.entries(this.itemHoldersToElems)) {
             let name = entry[0];
             let holder = entry[1];
 
-            this.elemsToItemHolders.set(holder, name);
+            for(let v of data.itemHolders)
+                if(name === v) this.elemsToItemHolders.set(holder, name);
+
             holder.addEventListener('mousedown', onClickHolder.bind({this: this, elem: holder}));
         }
     }
@@ -67,7 +73,7 @@ export default class VItems extends View {
     /**
      * 
      * @param {MItem[]} items
-     * @param {string} holder
+     * @param {'backpack'|'pouch'|'equipment'} holder
      */
     onItemsAdded(items, holder) {
         for(let item of items) {
@@ -78,6 +84,7 @@ export default class VItems extends View {
 
             this.itemHoldersToElems[holder].appendChild(elem);
 
+            refreshValue(elem, item);
             refreshAttribute(elem, item, 'health');
             refreshAttribute(elem, item, 'attack');
             refreshAttribute(elem, item, 'attackSpeed');
@@ -88,7 +95,24 @@ export default class VItems extends View {
     /**
      * 
      * @param {MItem[]} items
-     * @param {string} holder
+     * @param {'backpack'|'pouch'|'equipment'} holder
+     */
+    onItemsRemoved(items, holder) {
+        for(let item of items) {
+            let elem = this.itemsToElems.get(item);
+
+            this.itemsToElems.delete(item);
+            if(elem) {
+                this.elemsToItems.delete(elem);
+                this.itemHoldersToElems[holder].removeChild(elem);
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param {MItem[]} items
+     * @param {'backpack'|'pouch'|'equipment'} holder
      */
     onItemsMoved(items, holder) {
         for(let item of items) {
@@ -103,15 +127,32 @@ export default class VItems extends View {
 
 /**
  * 
- * @param {HTMLElement} elem 
+ * @param {HTMLElement} elem
+ * @param {MItem} item
+ */
+function refreshValue(elem, item) {
+    let e = elem.querySelector('[data-id=value');
+    if(e instanceof HTMLElement) {
+        e.textContent = item.getValue()+'';
+    }
+}
+
+/**
+ * 
+ * @param {HTMLElement} elem
+ * @param {MItem} item
+ * @param {'health'|'attack'|'attackSpeed'|'attackRange'} attrib
  */
 function refreshAttribute(elem, item, attrib) {
-    if(item[attrib] == null || item[attrib] == 0) return;
     let e = elem.querySelector(`[data-id=${attrib}]`);
     if(e instanceof HTMLElement) {
-        if(e.parentElement)
-            e.parentElement.style.display = 'block';
-        e.textContent = item[attrib]+'';
+        let value = item[attrib];
+
+        if(value !== 0) {
+            if(e.parentElement)
+                e.parentElement.style.display = 'block';
+            e.textContent = item[attrib]+'';
+        }
     }
 }
 
@@ -122,6 +163,7 @@ function dropItem() {
     if(this.itemHeld) {
         this.itemHeld.style.transform = '';
         this.itemHeld.style.pointerEvents = '';
+        this.itemHeld.style.zIndex = '';
         this.itemHeld = null;
     }
 }
@@ -131,6 +173,8 @@ function dropItem() {
  * @param {MouseEvent} e 
  */
 function onClickItem(e) {
+    if(e.button !== 0) return;
+
     const elem = this.elem;
     const that = this.this;
 
@@ -140,6 +184,7 @@ function onClickItem(e) {
         that.itemHeldX = e.screenX;
         that.itemHeldY = e.screenY;
         that.itemHeld.style.pointerEvents = 'none';
+        that.itemHeld.style.zIndex = '1';
     }
 }
 
@@ -148,6 +193,8 @@ function onClickItem(e) {
  * @param {MouseEvent} e 
  */
 function onClickHolder(e) {
+    if(e.button !== 0) return;
+
     const elem = this.elem;
     const that = this.this;
 
@@ -157,11 +204,11 @@ function onClickHolder(e) {
         if(item == null)
             return;
 
-        let holder = that.elemsToItemHolders.get(elem);
-        if(holder == null)
+        let holderName = that.elemsToItemHolders.get(elem);
+        if(holderName == null)
             return;
 
-        that.game.controller.cItems.moveItems([item], holder);
+        that.game.controller.cItems.moveItems([item], holderName);
         dropItem.bind(that)();
     }
 }

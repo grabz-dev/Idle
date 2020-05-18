@@ -19,7 +19,19 @@
   </div>
 
   <div class="ui">
-    <div class="child panel edge left-1"></div>
+    <div class="child parent col left-1">
+      <div class="child parent col panel edge">
+        <div class="child">Stats</div>
+        <div class="child" id="stats">
+          Wave: <span data-id="wave">0</span><br>
+          Health: <span data-id="curHealth">0</span>/<span data-id="maxHealth">0</span>
+        </div>
+      </div>
+      <div class="child parent col panel edge no-top bottom-1-1">
+        <div class="child">Equipment</div>
+        <div class="child" id="equipment"></div>
+      </div>
+    </div>
     <div class="child parent row edge middle-1">
       <div id="enemies"></div>
     </div>

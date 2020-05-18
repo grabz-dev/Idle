@@ -1,5 +1,7 @@
 import Model from './../Model.js';
 
+import MTimer from './MTimer.js';
+
 export default class MItem extends Model {
     /**
      * 
@@ -17,6 +19,14 @@ export default class MItem extends Model {
         this.attack = attack;
         this.attackSpeed = attackSpeed;
         this.attackRange = attackRange;
+        this.attackTimer = 0;
+    }
+
+    /**
+     * @returns {number}
+     */
+    getValue() {
+        return this.health + (this.attack * this.attackSpeed * this.attackRange);
     }
 
     /**
@@ -33,7 +43,7 @@ export default class MItem extends Model {
     }
 
     /**
-     * @param {object} obj 
+     * @param {any} obj 
      */
     deserialize(obj) {
         this.body = obj.body;

@@ -11,6 +11,7 @@ export default class VBattle extends View {
      * @param {number} updateInterval
      * @param {{
         enemies: HTMLElement,
+        stats: HTMLElement
     }} elems
      */
     constructor(game, updateInterval, elems) {
@@ -69,5 +70,22 @@ export default class VBattle extends View {
             }
             bar.style.transform = `translate(-${100 - (enemy.healthCur / enemy.healthMax * 100)}%)`;
         }
+    }
+
+    onWaveChanged() {
+        updateStatElem(this.elems.stats, '[data-id=wave]', this.game.model.save.wave+'');
+    }
+}
+
+/**
+ * 
+ * @param {HTMLElement} elem
+ * @param {string} query 
+ * @param {string} value 
+ */
+function updateStatElem(elem, query, value) {
+    let stat = elem.querySelector(query);
+    if(stat) {
+        stat.textContent = value;
     }
 }

@@ -7,8 +7,10 @@ import EntryPoint from './Game/EntryPoint.js';
 const entryPoint = new EntryPoint();
 
 /** @type {View[]} */
+// @ts-ignore
 const views = Object.keys(entryPoint.view).map(e => entryPoint.view[e]);
 /** @type {Controller[]} */
+// @ts-ignore
 const controllers = Object.keys(entryPoint.controller).map(e => entryPoint.controller[e]);
 
 for(let controller of controllers)

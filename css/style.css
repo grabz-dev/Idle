@@ -52,30 +52,27 @@
     transition: transform 300ms ease-out;
 }
 
-#backpack, #pouch {
+#backpack, #pouch, #equipment, #stats {
     position: relative;
     width: 100%;
     height: 100%;
 }
 
-.item::before {
-    padding-top: 100%;
-    content: "";
-    display: block;
-}
-
 .item {
+    --size: 80px;
     --margin: 2px;
     --border: 1px;
 
     position: relative;
 
     background-color: #ca9147;
+    font-size: 12px;
 
     float: left;
     box-sizing: content-box;
     border: var(--border) solid black;
-    width: calc(16.6666% - var(--margin) * 2 - var(--border) * 2);
+    width: calc(var(--size) - var(--margin) * 2 - var(--border) * 2);
+    height: calc(var(--size) - var(--margin) * 2 - var(--border) * 2);
     margin: var(--margin);
 }
 
@@ -90,6 +87,21 @@
     top: 0;
 }
 
+.item .value {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    text-align: center;
+    background-color: #9b6a29;
+    line-height: 10px;
+}
+
+.item .stats {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
 .item .box.left {
     text-align: left;
 }
@@ -100,7 +112,6 @@
 .item .box .text {
     display: none;
     position: relative;
-    font-size: 12px;
     padding-left: 3px;
     padding-right: 3px;
 }

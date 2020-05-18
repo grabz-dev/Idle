@@ -31,7 +31,7 @@ export default class MEnemy extends Model {
     }
 
     /**
-     * @param {object} obj 
+     * @param {any} obj 
      */
     deserialize(obj) {
         this.x = obj.x;

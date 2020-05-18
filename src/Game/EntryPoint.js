@@ -3,9 +3,11 @@ import Data from './Data.js';
 import VBattle from './View/VBattle.js';
 import VDayNightCycle from './View/VDayNightCycle.js';
 import VItems from './View/VItems.js';
+import VPlayer from './View/VPlayer.js';
 
 import CBattle from './Controller/CBattle.js';
 import CItems from './Controller/CItems.js';
+import CPlayer from './Controller/CPlayer.js';
 
 import TEnemy from './Template/TEnemy.js';
 import TItem from './Template/TItem.js';
@@ -22,7 +24,9 @@ export default class EntryPoint {
             wrap: /** @type {HTMLElement} */(document.getElementById('wrap')),
             enemies: /** @type {HTMLElement} */(document.getElementById('enemies')),
             backpack: /** @type {HTMLElement} */(document.getElementById('backpack')),
-            pouch: /** @type {HTMLElement} */(document.getElementById('pouch'))
+            pouch: /** @type {HTMLElement} */(document.getElementById('pouch')),
+            equipment: /** @type {HTMLElement} */(document.getElementById('equipment')),
+            stats: /** @type {HTMLElement} */(document.getElementById('stats')),
         };
         for(let entry of Object.entries(elems)) {
             if(entry[1] == null) throw new Error('DOM initialization error, ' + name);
@@ -35,16 +39,22 @@ export default class EntryPoint {
                 dim: elems.dim
             }),
             vBattle: new VBattle(this, 0, {
-                enemies: elems.enemies
+                enemies: elems.enemies,
+                stats: elems.stats
             }),
             vItems: new VItems(this, 0, {
                 backpack: elems.backpack,
-                pouch: elems.pouch
+                pouch: elems.pouch,
+                equipment: elems.equipment
+            }),
+            vPlayer: new VPlayer(this, 0, {
+                stats: elems.stats
             })
         };
         this.controller = {
             cBattle: new CBattle(this),
-            cItems: new CItems(this)
+            cItems: new CItems(this),
+            cPlayer: new CPlayer(this)
         };
         this.template = {
             tEnemy: () => /** @type {HTMLElement} */(template.tEnemy.cloneNode(true)),
