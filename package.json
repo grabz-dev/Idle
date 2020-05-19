@@ -1,0 +1,12 @@
+{
+  "name": "idle",
+  "version": "0.1.0",
+  "description": "",
+  "main": "src/main.js",
+  "author": "Grabz",
+  "dependencies": {
+    "eslint": "^7.0.0",
+    "eslint-import-resolver-node": "^0.3.3",
+    "eslint-plugin-import": "^2.20.2"
+  }
+}

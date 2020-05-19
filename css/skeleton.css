@@ -89,6 +89,15 @@ body {
     flex: 0 0 20%;
 }
 
+.ui .child.top-1-2 {
+    flex: 0 0 40%;
+}
+
+.ui .child.bottom-1-2 {
+    flex: 0 0 60%;
+    justify-content: center;
+}
+
 .ui .child.top-1-3 {
     flex: 4 0 auto;
 }

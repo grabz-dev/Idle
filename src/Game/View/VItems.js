@@ -13,7 +13,8 @@ export default class VItems extends View {
      * @param {{
         backpack: HTMLElement,
         pouch: HTMLElement,
-        equipment: HTMLElement
+        equipment: HTMLElement,
+        itemHeld: HTMLElement
     }} elems
      */
     constructor(game, updateInterval, elems) {
@@ -35,8 +36,6 @@ export default class VItems extends View {
 
         /** @type {null|HTMLElement} */
         this.itemHeld = null;
-        this.itemHeldX = 0;
-        this.itemHeldY = 0;
 
         /** @type {Map<HTMLElement, 'backpack'|'pouch'|'equipment'>} */
         this.elemsToItemHolders = new Map();
@@ -53,12 +52,16 @@ export default class VItems extends View {
 
     /**
      * 
-     * @param {number} frameTime 
+     * @param {number} updateInterval 
      */
-    update(frameTime) {
+    update(updateInterval) {
+        this.refreshItemHeldPosition();
+    }
+
+    refreshItemHeldPosition() {
         if(this.itemHeld) {
             const data = this.game.model.data;
-            this.itemHeld.style.transform = `translate(${data.mouse.x - this.itemHeldX}px, ${data.mouse.y - this.itemHeldY}px)`;
+            this.itemHeld.style.transform = `translate(${data.mouse.x - this.itemHeld.offsetWidth / 2}px, ${data.mouse.y - this.itemHeld.offsetHeight / 2}px)`;
         }
     }
 
@@ -100,6 +103,9 @@ export default class VItems extends View {
     onItemsRemoved(items, holder) {
         for(let item of items) {
             let elem = this.itemsToElems.get(item);
+
+            if(elem === this.itemHeld)
+                dropItem.bind(this)();
 
             this.itemsToElems.delete(item);
             if(elem) {
@@ -160,10 +166,16 @@ function refreshAttribute(elem, item, attrib) {
  * @this {VItems}
  */
 function dropItem() {
+    const data = this.game.model.data;
+
     if(this.itemHeld) {
         this.itemHeld.style.transform = '';
-        this.itemHeld.style.pointerEvents = '';
-        this.itemHeld.style.zIndex = '';
+        let item = this.elemsToItems.get(this.itemHeld);
+        if(item) {
+            let holderName = data.itemsToHolders.get(item);
+            if(holderName)
+                this.itemHoldersToElems[holderName].appendChild(this.itemHeld);
+        }
         this.itemHeld = null;
     }
 }
@@ -181,10 +193,8 @@ function onClickItem(e) {
     if(that.itemHeld == null) {
         e.stopPropagation();
         that.itemHeld = elem;
-        that.itemHeldX = e.screenX;
-        that.itemHeldY = e.screenY;
-        that.itemHeld.style.pointerEvents = 'none';
-        that.itemHeld.style.zIndex = '1';
+        that.elems.itemHeld.appendChild(that.itemHeld);
+        that.refreshItemHeldPosition();
     }
 }
 

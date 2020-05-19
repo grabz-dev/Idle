@@ -41,7 +41,7 @@ function loop() {
         if(view.updateClock >= view.updateInterval) {
             view.updateClock = 0;
             if(view.update != null)
-                view.update(frameTime);
+                view.update(view.updateInterval);
         }
     }
 

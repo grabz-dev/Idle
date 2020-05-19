@@ -17,7 +17,7 @@ class View {
     }
 }
 
-/** @type {null|((frameTime: number) => void)} */
+/** @type {null|((updateInterval: number) => void)} */
 View.prototype.update = null;
 
 /** @type {null|((e: MouseEvent) => void)} */

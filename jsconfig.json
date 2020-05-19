@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "target":"esnext",
+        "checkJs": true,
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
+        "strict": true
+    },
+}

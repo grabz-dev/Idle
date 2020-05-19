@@ -3,11 +3,12 @@
 import View from './../View.js';
 
 import MColor from './../Model/MColor.js';
+import MTimer from './../Model/MTimer.js';
 
 /** @type {Map<number, {colors: MColor[], brightness: number}>} */
 const TIME_COLORS = new Map();
 TIME_COLORS.set(4.5, {colors: [MColor.HEXtoRGB('#0D0807'), MColor.HEXtoRGB('#0D0807')], brightness: 0.55});
-TIME_COLORS.set(5.5,   {colors: [MColor.HEXtoRGB('#855256'), MColor.HEXtoRGB('#FF6D50')], brightness: 0.8});
+TIME_COLORS.set(5.5, {colors: [MColor.HEXtoRGB('#855256'), MColor.HEXtoRGB('#FF6D50')], brightness: 0.8 });
 TIME_COLORS.set(6,   {colors: [MColor.HEXtoRGB('#3B77B2'), MColor.HEXtoRGB('#82A9BB')], brightness: 0.95});
 TIME_COLORS.set(15,  {colors: [MColor.HEXtoRGB('#3B77B2'), MColor.HEXtoRGB('#82A9BB')], brightness: 0.95});
 TIME_COLORS.set(18,  {colors: [MColor.HEXtoRGB('#7595C0'), MColor.HEXtoRGB('#8C6E6E')], brightness: 0.85});
@@ -22,35 +23,69 @@ export default class VDayNightCycle extends View {
      * @param {number} updateInterval
      * @param {{
            sky: HTMLElement,
-           dim: HTMLElement
+           dim: HTMLElement,
+           clock: HTMLElement
        }} elems
      */
     constructor(game, updateInterval, elems) {
         super(game, updateInterval);
         this.elems = elems;
 
+        this.skyTimer = new MTimer(10);
+
+        this.debugging = false;
         this.additionalTime = 0;
+
+        this.resume();
     }
+    
+    /**
+     * 
+     * @param {number} updateInterval 
+     */
+    update(updateInterval) {
+        const date = new Date();
 
-    update() {
-        let date = new Date();
-
-        //date.setMinutes(date.getMinutes() + this.additionalTime);
-        //this.additionalTime += 30;
-
-        updateSkyColor.bind(this)(date);
+        if(this.debugging) {
+            date.setMinutes(date.getMinutes() + this.additionalTime);
+            this.additionalTime += 30;
+            refreshSkyColor.bind(this)(date);
+            refreshClock.bind(this)(date);
+        }
+        else {
+            this.skyTimer.update(updateInterval);
+            if(this.skyTimer.done) {
+                this.skyTimer.reset();
+                refreshSkyColor.bind(this)(date);
+            }
+            refreshClock.bind(this)(date);
+        }
     }
 
     resume() {
-        this.update();
+        const date = new Date();
+
+        refreshSkyColor.bind(this)(date);
+        refreshClock.bind(this)(date);
     }
 }
 
 /**
- * @this VDayNightCycle
+ * @this {VDayNightCycle}
  * @param {Date} date
  */
-function updateSkyColor(date) {
+function refreshClock(date) {
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+
+    this.elems.clock.textContent = `${hours}:${minutes < 10 ? `0${minutes}` : `${minutes}`}`;
+}
+
+/**
+ * @this {VDayNightCycle}
+ * @param {Date} date
+ */
+function refreshSkyColor(date) {
     let cur = date.getHours() + (date.getMinutes() / 60);
     let hours = Array.from(TIME_COLORS.keys());
     hours.sort((a, b) => a - b);

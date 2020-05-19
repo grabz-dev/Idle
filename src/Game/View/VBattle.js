@@ -47,6 +47,7 @@ export default class VBattle extends View {
                 console.warn('Tried removing enemy that doesn\'t exist', enemy);
                 continue;
             }
+            
             this.enemies.delete(enemy);
             elem.remove();
         }
