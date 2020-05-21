@@ -22,6 +22,21 @@ export default class VBattle extends View {
         this.enemies = new Map();
     }
 
+    update() {
+        const save = this.game.model.save;
+        const data = this.game.model.data;
+
+        updateStatElem(this.elems.stats, '[data-id=distance]', (Math.floor(this.game.model.save.battle.distance * 10) / 10) +'');
+
+        const distance = save.battle.distance;
+        for(let enemy of save.battle.enemies) {
+            let elem = this.enemies.get(enemy);
+            if(!elem) continue;
+
+            elem.style.top = `${100 - (enemy.y - distance) * 10}%`;
+        }
+    }
+
     /**
      * 
      * @param {MEnemy[]} enemies
@@ -29,7 +44,7 @@ export default class VBattle extends View {
     onEnemiesAdded(enemies) {
         for(let enemy of enemies) {
             let elem = this.game.template.tEnemy();
-            elem.style.top = enemy.y * 10 + '%';
+            elem.style.top = '0%';
             elem.style.left = enemy.x * 10 + '%';
             this.enemies.set(enemy, elem);
             this.elems.enemies.appendChild(elem);
@@ -71,10 +86,6 @@ export default class VBattle extends View {
             }
             bar.style.transform = `translate(-${100 - (enemy.healthCur / enemy.healthMax * 100)}%)`;
         }
-    }
-
-    onWaveChanged() {
-        updateStatElem(this.elems.stats, '[data-id=wave]', this.game.model.save.wave+'');
     }
 }
 

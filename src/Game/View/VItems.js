@@ -56,6 +56,15 @@ export default class VItems extends View {
      */
     update(updateInterval) {
         this.refreshItemHeldPosition();
+
+        const save = this.game.model.save;
+        for(let item of save.items.equipment) {
+            let elem = this.itemsToElems.get(item);
+            if(elem == null) continue;
+            let attackBar = elem.querySelector('.attack-bar');
+            if(!(attackBar instanceof HTMLElement)) continue;
+            attackBar.style.transform = `translateX(-${item.attackTimer / (1 / item.attackSpeed) * 100}%)`;
+        }
     }
 
     refreshItemHeldPosition() {
@@ -92,6 +101,15 @@ export default class VItems extends View {
             refreshAttribute(elem, item, 'attack');
             refreshAttribute(elem, item, 'attackSpeed');
             refreshAttribute(elem, item, 'attackRange');
+
+            //TODO
+            let attackBar = elem.querySelector('.attack-bar');
+            if(!(attackBar instanceof HTMLElement)) continue;
+            if(item.type !== MItem.Type.Weapon)
+                attackBar.style.visibility = 'hidden';
+            else if(item.type === MItem.Type.Weapon && holder !== 'equipment')
+                attackBar.style.visibility = 'hidden';
+            else attackBar.style.visibility = 'visible';
         }
     }
 
@@ -127,6 +145,24 @@ export default class VItems extends View {
                 continue;
             
             this.itemHoldersToElems[holder].appendChild(elem);
+
+            //TODO
+            let attackBar = elem.querySelector('.attack-bar');
+            if(!(attackBar instanceof HTMLElement)) continue;
+            if(item.type !== MItem.Type.Weapon)
+                attackBar.style.visibility = 'hidden';
+            else if(item.type === MItem.Type.Weapon && holder !== 'equipment')
+                attackBar.style.visibility = 'hidden';
+            else attackBar.style.visibility = 'visible';
+        }
+    }
+
+    refreshBackpackPositions() {
+        for(let item of this.game.model.save.items.backpack) {
+            let elem = this.itemsToElems.get(item);
+            if(!elem || !elem.parentElement) continue;
+
+            elem.parentElement.appendChild(elem);
         }
     }
 }
@@ -170,6 +206,7 @@ function dropItem() {
 
     if(this.itemHeld) {
         this.itemHeld.style.transform = '';
+        this.itemHeld.style.pointerEvents = '';
         let item = this.elemsToItems.get(this.itemHeld);
         if(item) {
             let holderName = data.itemsToHolders.get(item);
@@ -193,8 +230,21 @@ function onClickItem(e) {
     if(that.itemHeld == null) {
         e.stopPropagation();
         that.itemHeld = elem;
+        that.itemHeld.style.pointerEvents = 'none';
         that.elems.itemHeld.appendChild(that.itemHeld);
         that.refreshItemHeldPosition();
+    }
+    else {
+        let item1 = that.elemsToItems.get(elem);
+        let item2 = that.elemsToItems.get(that.itemHeld);
+        if(item1 == null || item2 == null) return;
+
+        let item1holderName = that.game.model.data.itemsToHolders.get(item1);
+        let item2holderName = that.game.model.data.itemsToHolders.get(item2);
+        if(item1holderName == null || item2holderName == null) return;
+
+        that.game.controller.cItems.moveItems([item1], item2holderName);
+        that.game.controller.cItems.moveItems([item2], item1holderName);
     }
 }
 

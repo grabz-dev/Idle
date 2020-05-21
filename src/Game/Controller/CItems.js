@@ -67,9 +67,7 @@ export default class CItems extends Controller {
         }
 
         if(holderName === 'backpack' && items.length + holder.length > data.items[holderName]) {
-            holder.sort((a, b) => b.getValue() - a.getValue());
-            let deleted = holder.splice(10, holder.length);
-            this.game.view.vItems.onItemsRemoved(deleted, holderName);
+            handleBackpackOverfill.bind(this)();
         }
 
         for(let i = 0; i < items.length; i++) {
@@ -147,9 +145,7 @@ export default class CItems extends Controller {
             if(oldHolderName == null || oldHolderName === holderName) {
                 continue;
             }
-
-            console.log(holder.length, data.items[holderName]);
-
+            
             if(holder.length >= data.items[holderName]) {
                 items.splice(i, items.length);
                 break;
@@ -171,8 +167,49 @@ export default class CItems extends Controller {
  */
 function addStarterItems() {
     this.addItems([
-        new MItem('body', 10, 0, 0, 0), 
-        new MItem('feet', 7, 0, 0, 0),
-        new MItem('hand', 0, 4, 1, 1)
+        new MItem(MItem.Type.Armor, 5, 0, 0, 0), 
+        new MItem(MItem.Type.Armor, 5, 0, 0, 0),
+        new MItem(MItem.Type.Weapon, 0, 1, 1, 1)
     ], 'backpack');
+}
+
+/**
+ * @this {CItems}
+ */
+function handleBackpackOverfill() {
+    const data = this.game.model.data;
+    const save = this.game.model.save;
+
+    save.items.backpack.sort((a, b) => b.getValue() - a.getValue());
+
+    /** @type {number[]} */
+    var types = [];
+
+    /** @type {MItem[]} */
+    var newBackpack = [];
+
+    /** @type {MItem[]} */
+    var removed = [];
+
+    for(let item of save.items.backpack) {
+        if(types[item.type] == null)
+            types[item.type] = 0;
+    }
+
+    const slotsPerType = Math.floor(data.items.backpack / 2 / types.length);
+    
+    for(let item of save.items.backpack) {
+        types[item.type]++;
+
+        if(types[item.type] < slotsPerType)
+            newBackpack.push(item);
+        else
+            removed.push(item);
+    }
+
+    save.items.backpack.splice(0, save.items.backpack.length);
+    save.items.backpack.push(...newBackpack);
+
+    this.game.view.vItems.onItemsRemoved(removed, 'backpack');
+    this.game.view.vItems.refreshBackpackPositions();
 }

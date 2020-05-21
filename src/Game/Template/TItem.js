@@ -1,5 +1,6 @@
 export default
 `<div class="item" style=''>
+    <div class="attack-bar"></div>
     <div class="value" data-id="value">0</div>
     <div class="stats">
         <div class="box left">

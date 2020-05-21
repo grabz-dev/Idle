@@ -16,8 +16,11 @@ export default class Data {
             tutorial: {
                 givenStarterItems: false
             },
-            wave: 0,
-            enemies: /** @type {MEnemy[]} */([]),
+            battle: {
+                enemies: /** @type {MEnemy[]} */([]),
+                distance: 0, //in meters
+                velocity: 0
+            },
             items: {
                 backpack: /** @type {MItem[]} */([]),
                 pouch: /** @type {MItem[]} */([]),
@@ -26,7 +29,6 @@ export default class Data {
             player: {
                 curHealth: 0
             },
-            battleTimer: new MTimer(1)
         };
 
         this.data = {
@@ -34,12 +36,18 @@ export default class Data {
                 x: 0,
                 y: 0
             },
+            battle: {
+                acceleration: 0.4, //per second
+                spawnOffset: 11,
+                attackRange: 1,
+                startingVelocity: 0.8,
+            },
             itemHolders: /** @type {['backpack', 'pouch', 'equipment']} */(['backpack', 'pouch', 'equipment']),
             itemsToHolders: /** @type {Map<MItem, 'backpack'|'pouch'|'equipment'>} */(new Map()),
             items: {
-                backpack: 20,
+                backpack: 40,
                 pouch: 6,
-                equipment: 3
+                equipment: 6
             },
             player: {
                 baseHealth: 10,

@@ -2,19 +2,20 @@ import Model from './../Model.js';
 
 export default class MEnemy extends Model {
     /**
-     * @param {number} x 
-     * @param {number} y
-     * @param {number} attack
-     * @param {number} health
+     * @param {number=} x 
+     * @param {number=} y
+     * @param {number=} attack
+     * @param {number=} health
      */
     constructor(x, y, attack, health) {
         super('MEnemy.mjs');
 
-        this.x = x;
-        this.y = y;
-        this.attack = attack;
-        this.healthCur = health;
-        this.healthMax = health;
+        this.x = x ?? 0;
+        this.y = y ?? 0;
+        this.attack = attack ?? 0;
+        this.healthCur = health ?? 0;
+        this.healthMax = health ?? 0;
+        this.attackTimer = 0;
     }
 
     /**
@@ -26,7 +27,8 @@ export default class MEnemy extends Model {
             y: this.y,
             attack: this.attack,
             healthCur: this.healthCur,
-            healthMax: this.healthMax
+            healthMax: this.healthMax,
+            attackTimer: this.attackTimer,
         });
     }
 
@@ -39,5 +41,6 @@ export default class MEnemy extends Model {
         this.attack = obj.attack;
         this.healthCur = obj.healthCur;
         this.healthMax = obj.healthMax;
+        this.attackTimer = obj.attackTimer;
     }
 }
