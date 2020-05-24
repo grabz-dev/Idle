@@ -143,12 +143,12 @@ function addItem() {
         {
             let rng = Utility.getRandomInt(1, 1000);
             if(rng < 700) item.health = Utility.getRandomInt(1, 5) * level * Math.min(level, 10);
-            else if(rng < 800) item.health = Utility.getRandomInt(6, 10) * Math.min(level, 10);
-            else if(rng < 900) item.health = Utility.getRandomInt(11, 15) * Math.min(level, 10);
-            else if(rng < 950) item.health = Utility.getRandomInt(16, 20) * Math.min(level, 10);
-            else if(rng < 975) item.health = Utility.getRandomInt(21, 40) * Math.min(level, 10);
-            else if(rng < 990) item.health = Utility.getRandomInt(41, 45) * Math.min(level, 10);
-            else item.health = Utility.getRandomInt(46, 50) * level;
+            else if(rng < 800) item.health = Utility.getRandomInt(6, 10) * level * Math.min(level, 10);
+            else if(rng < 900) item.health = Utility.getRandomInt(11, 15) * level * Math.min(level, 10);
+            else if(rng < 950) item.health = Utility.getRandomInt(16, 20) * level * Math.min(level, 10);
+            else if(rng < 975) item.health = Utility.getRandomInt(21, 40) * level * Math.min(level, 10);
+            else if(rng < 990) item.health = Utility.getRandomInt(41, 45) * level * Math.min(level, 10);
+            else item.health = Utility.getRandomInt(46, 50) * level * Math.min(level, 10);
         }
     }
     else {
@@ -161,7 +161,7 @@ function addItem() {
             else if(rng < 950) item.attack = 4 * level * Math.min(level, 10);
             else if(rng < 975) item.attack = 5 * level * Math.min(level, 10);
             else if(rng < 990) item.attack = 6 * level * Math.min(level, 10);
-            else item.attack = 7 * level;
+            else item.attack = 7 * level * Math.min(level, 10);
         }
         {
             let rng = Utility.getRandomInt(1, 1000);
