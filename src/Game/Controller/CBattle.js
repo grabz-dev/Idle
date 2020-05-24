@@ -221,7 +221,7 @@ function addEnemies(pos) {
     for(let i = 0; i < enemyCount; i++) {
         let index = Utility.getRandomInt(0, arr.length);
         arr.splice(index, 1);
-        let enemy = new MEnemy(arr[index], pos + this.data.battle.spawnOffset, Math.ceil(level), Math.ceil(level * 20) + 1);
+        let enemy = new MEnemy(arr[index], pos + this.data.battle.spawnOffset, Math.ceil(level), Math.ceil(level * 200) + 1);
     
         this.save.battle.enemies.push(enemy);
         enemies.push(enemy);
