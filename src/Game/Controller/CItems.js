@@ -134,7 +134,41 @@ export default class CItems extends Controller {
         }
         
         this.game.view.vItems.onEvent('itemsMoved', items, holderName);
-        if(holderName === 'equipment')
+        this.game.controller.cPlayer.calculateStats();
+    }
+
+    /**
+     * 
+     * @param {MItem} item1
+     * @param {'backpack'|'pouch'|'equipment'} holderName1
+     * @param {MItem} item2
+     * @param {'backpack'|'pouch'|'equipment'} holderName2
+     */
+    swapItems(item1, holderName1, item2, holderName2) {
+        /** @type {MItem[]|undefined} */
+        let holder1 = this.save.items[holderName1];
+        if(holder1 == null) {
+            console.error('CItems.swapItems bad holder 1', holderName1);
+            return;
+        }
+        let holder2 = this.save.items[holderName2];
+        if(holder2 == null) {
+            console.error('CItems.swapItems bad holder 2', holderName2);
+            return;
+        }
+
+        this.data.itemsToHolders.set(item1, holderName2);
+        this.data.itemsToHolders.set(item2, holderName1);
+
+        let index1 = holder1.indexOf(item1);
+        let index2 = holder1.indexOf(item2);
+        holder1[index1] = item2;
+        holder2[index2] = item1;
+
+        this.game.view.vItems.onEvent('itemsMoved', [item1], holderName2);
+        this.game.view.vItems.onEvent('itemsMoved', [item2], holderName1);
+
+        if(holderName1 === 'equipment' || holderName2 === 'equipment')
             this.game.controller.cPlayer.calculateStats();
     }
 }
@@ -185,5 +219,5 @@ function handleBackpackOverfill() {
     this.save.items.backpack.push(...newBackpack);
 
     this.game.view.vItems.onEvent('itemsRemoved', removed, 'backpack');
-    this.game.view.vItems.onEvent('backpackSorted');
+    this.game.view.vItems.onEvent('holderSorted', 'backpack');
 }

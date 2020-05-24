@@ -74,12 +74,11 @@ export default class VItems extends View {
         for(let holderName of this.data.itemHolders) {
             onItemsAdded.bind(this)(this.save.items[holderName], holderName);
         }
-        onBackpackSorted.bind(this)();
     }
 
     /**
      * 
-     * @param {'itemsAdded'|'itemsRemoved'|'itemsMoved'|'backpackSorted'} event 
+     * @param {'itemsAdded'|'itemsRemoved'|'itemsMoved'|'holderSorted'} event 
      * @param  {...any} params 
      */
     onEvent(event, ...params) {
@@ -104,8 +103,9 @@ export default class VItems extends View {
             onItemsMoved.bind(this)(items, holder);
             break;
         }
-        case 'backpackSorted': {
-            onBackpackSorted.bind(this)();
+        case 'holderSorted': {
+            /** @type {'backpack'|'pouch'|'equipment'} */ let holder = params[0];
+            onHolderSorted.bind(this)(holder);
         }
         }
     }
@@ -192,17 +192,22 @@ function onItemsMoved(items, holder) {
             attackBar.style.visibility = 'hidden';
         else attackBar.style.visibility = 'visible';
     }
+
+    onHolderSorted.bind(this)(holder);
 }
 
 /**
  * @this {VItems}
+ * @param {'backpack'|'pouch'|'equipment'} holderName
  */
-function onBackpackSorted() {
-    for(let item of this.save.items.backpack) {
+function onHolderSorted(holderName) {
+    for(let item of this.save.items[holderName]) {
         let elem = this.itemsToElems.get(item);
         if(!elem || !elem.parentElement) continue;
 
-        elem.parentElement.appendChild(elem);
+        let parent = elem.parentElement;
+        parent.removeChild(elem);
+        parent.appendChild(elem);
     }
 }
 
@@ -261,8 +266,10 @@ function dropItem() {
         let item = this.elemsToItems.get(this.itemHeld);
         if(item) {
             let holderName = this.data.itemsToHolders.get(item);
-            if(holderName)
+            if(holderName) {
                 this.itemHoldersToElems[holderName].appendChild(this.itemHeld);
+                onHolderSorted.bind(this)(holderName);
+            }
         }
         this.itemHeld = null;
     }
@@ -294,8 +301,7 @@ function onClickItem(e) {
         let item2holderName = that.data.itemsToHolders.get(item2);
         if(item1holderName == null || item2holderName == null) return;
 
-        that.game.controller.cItems.moveItems([item1], item2holderName);
-        that.game.controller.cItems.moveItems([item2], item1holderName);
+        that.game.controller.cItems.swapItems(item1, item1holderName, item2, item2holderName);
     }
 }
 
