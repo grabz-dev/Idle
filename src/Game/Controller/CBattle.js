@@ -125,7 +125,7 @@ export default class CBattle extends Controller {
             }
         }
         else {
-            this.save.battle.velocity = this.data.battle.startingVelocity;
+            this.save.battle.velocity = Math.max(this.save.battle.velocity / 2, this.data.battle.startingVelocity);
         }
     }
     restart() {
