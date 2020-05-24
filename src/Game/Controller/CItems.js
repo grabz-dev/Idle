@@ -123,8 +123,7 @@ export default class CItems extends Controller {
             }
             
             if(holder.length >= this.data.items[holderName]) {
-                items.splice(i, items.length);
-                break;
+                continue;
             }
 
             item.attackTimer = 0;
@@ -161,7 +160,7 @@ export default class CItems extends Controller {
         this.data.itemsToHolders.set(item2, holderName1);
 
         let index1 = holder1.indexOf(item1);
-        let index2 = holder1.indexOf(item2);
+        let index2 = holder2.indexOf(item2);
         holder1[index1] = item2;
         holder2[index2] = item1;
 
