@@ -39,11 +39,7 @@ export default class VDayNightCycle extends View {
         this.resume();
     }
     
-    /**
-     * 
-     * @param {number} updateInterval 
-     */
-    update(updateInterval) {
+    update() {
         const date = new Date();
 
         if(this.debugging) {
@@ -53,11 +49,7 @@ export default class VDayNightCycle extends View {
             refreshClock.bind(this)(date);
         }
         else {
-            this.skyTimer.update(updateInterval);
-            if(this.skyTimer.done) {
-                this.skyTimer.reset();
-                refreshSkyColor.bind(this)(date);
-            }
+            refreshSkyColor.bind(this)(date);
             refreshClock.bind(this)(date);
         }
     }

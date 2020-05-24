@@ -18,15 +18,12 @@ export default class CPlayer extends Controller {
     }
 
     calculateStats() {
-        const data = this.game.model.data;
-        const save = this.game.model.save;
-
-        data.player.maxHealth = data.player.baseHealth;
-        for(let item of save.items.equipment) {
-            data.player.maxHealth += item.health;
+        this.data.player.maxHealth = this.data.player.baseHealth;
+        for(let item of this.save.items.equipment) {
+            this.data.player.maxHealth += item.health;
         }
-        if(save.player.curHealth > data.player.maxHealth)
-            save.player.curHealth = data.player.maxHealth;
+        if(this.save.player.curHealth > this.data.player.maxHealth)
+            this.save.player.curHealth = this.data.player.maxHealth;
 
         this.game.view.vPlayer.onEquipmentChanged();
     }

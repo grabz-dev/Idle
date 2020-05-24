@@ -16,10 +16,11 @@ export default class CBattle extends Controller {
         super(game);
     }
     
-    start() {
-        if(this.game.model.save.player.curHealth <= 0) {
-            restart.bind(this)();
-        }
+    awake() {
+        this.game.view.vBattle.onEvent('enemiesAdded', this.save.battle.enemies);
+
+        if(this.save.battle.velocity < this.data.battle.startingVelocity)
+            this.save.battle.velocity = this.data.battle.startingVelocity;
     }
 
     /**
@@ -27,38 +28,35 @@ export default class CBattle extends Controller {
      * @param {number} frameTime 
      */
     update(frameTime) {
-        const save = this.game.model.save;
-        const data = this.game.model.data;
-
-        const nearestEnemy = save.battle.enemies[0];
+        const nearestEnemy = this.save.battle.enemies[0];
 
         let move = true;
 
-        for(let item of save.items.equipment) {
+        for(let item of this.save.items.equipment) {
             item.attackTimer += frameTime / 1000;
         }
 
         if(nearestEnemy) {
             if(isEnemyInRange.bind(this)(nearestEnemy)) {
                 move = false;
-                save.battle.distance = nearestEnemy.y - data.battle.attackRange;
+                this.save.battle.distance = nearestEnemy.y - this.data.battle.attackRange;
 
-                for(let item of save.items.equipment) {
+                for(let item of this.save.items.equipment) {
                     if(item.attack <= 0) continue;
         
                     item.attackTimer += frameTime / 1000;
                     if(item.attackTimer >= 1 / item.attackSpeed) {
                         item.attackTimer -= 1 / item.attackSpeed;
         
-                        let enemies = save.battle.enemies.slice(0, item.attackRange);
+                        let enemies = this.save.battle.enemies.slice(0, item.attackRange);
                         for(let enemy of enemies)
                             enemy.healthCur -= item.attack;
-                        this.game.view.vBattle.onEnemiesDamaged(enemies);
+                        this.game.view.vBattle.onEvent('enemiesDamaged', enemies);
                         for(let enemy of enemies) {
                             if(enemy.healthCur <= 0) {
-                                save.battle.enemies.splice(0, 1);
+                                this.save.battle.enemies.splice(0, 1);
                                 addItem.bind(this)();
-                                this.game.view.vBattle.onEnemiesRemoved([enemy]);
+                                this.game.view.vBattle.onEvent('enemiesRemoved', [enemy]);
                             }
                         }
 
@@ -72,51 +70,55 @@ export default class CBattle extends Controller {
             }
         }
 
-        for(let item of save.items.equipment) {
+        for(let item of this.save.items.equipment) {
             if(item.attackTimer >= 1 / item.attackSpeed) {
                 item.attackTimer = 1 / item.attackSpeed;
             }
         }
 
-        for(let enemy of save.battle.enemies) {
+        for(let enemy of this.save.battle.enemies) {
             enemy.attackTimer += frameTime / 1000;
         }
 
-        save.battle.enemies.some((enemy => {
+        this.save.battle.enemies.some((enemy => {
             if(!isEnemyInRange.bind(this)(enemy))
                 return true;
 
             if(enemy.attackTimer >= 1 / 1) {
                 enemy.attackTimer -= 1 / 1;
 
-                save.player.curHealth -= enemy.attack;
+                this.save.player.curHealth -= enemy.attack;
                 this.game.view.vPlayer.onPlayerDamaged(enemy.attack);
-                if(save.player.curHealth <= 0) {
+                if(this.save.player.curHealth <= 0) {
                     restart.bind(this)();
                     return true;
                 }
             }
         }));
 
-        for(let enemy of save.battle.enemies) {
+        for(let enemy of this.save.battle.enemies) {
             if(enemy.attackTimer >= 1 / 1)
                 enemy.attackTimer = 1 / 1;
         }
 
         if(move) {
-            let prevPosInt = Math.floor(save.battle.distance);
+            let prevPosInt = Math.floor(this.save.battle.distance);
 
-            save.battle.velocity += data.battle.acceleration * (frameTime / 1000);
-            save.battle.distance += save.battle.velocity * (frameTime / 1000);
+            this.save.battle.velocity += this.data.battle.acceleration * (frameTime / 1000);
+            this.save.battle.distance += this.save.battle.velocity * (frameTime / 1000);
 
-            let newPosInt = Math.floor(save.battle.distance);
+            if(this.save.battle.distance > this.save.battle.distanceBest) {
+                this.save.battle.distanceBest = this.save.battle.distance;
+            }
+
+            let newPosInt = Math.floor(this.save.battle.distance);
 
             if(newPosInt > prevPosInt) {
-                addEnemy.bind(this)(newPosInt);
+                addEnemies.bind(this)(newPosInt);
             }
         }
         else {
-            save.battle.velocity = data.battle.startingVelocity;
+            this.save.battle.velocity = this.data.battle.startingVelocity;
         }
     }
 }
@@ -126,23 +128,26 @@ export default class CBattle extends Controller {
  * TEMPORARY TODO
  */
 function addItem() {
-    const save = this.game.model.save;
-    const data = this.game.model.data;
+    let level = Math.ceil(this.save.battle.distance / 100);
 
-    let level = Math.ceil(save.battle.distance / 100);
-
-    const item = new MItem();
+    const item = {
+        type: /** @type {0|1|2} */(0),
+        health: 0,
+        attack: 0,
+        attackRange: 0,
+        attackSpeed: 0
+    };
 
     if(Utility.getRandomInt(0, 2) === 0) {
         item.type = MItem.Type.Armor;
         {
             let rng = Utility.getRandomInt(1, 1000);
-            if(rng < 700) item.health = Utility.getRandomInt(1, 5) * level;
-            else if(rng < 800) item.health = Utility.getRandomInt(6, 10) * level;
-            else if(rng < 900) item.health = Utility.getRandomInt(11, 15) * level;
-            else if(rng < 950) item.health = Utility.getRandomInt(16, 20) * level;
-            else if(rng < 975) item.health = Utility.getRandomInt(21, 40) * level;
-            else if(rng < 990) item.health = Utility.getRandomInt(41, 45) * level;
+            if(rng < 700) item.health = Utility.getRandomInt(1, 5) * level * Math.min(level, 10);
+            else if(rng < 800) item.health = Utility.getRandomInt(6, 10) * Math.min(level, 10);
+            else if(rng < 900) item.health = Utility.getRandomInt(11, 15) * Math.min(level, 10);
+            else if(rng < 950) item.health = Utility.getRandomInt(16, 20) * Math.min(level, 10);
+            else if(rng < 975) item.health = Utility.getRandomInt(21, 40) * Math.min(level, 10);
+            else if(rng < 990) item.health = Utility.getRandomInt(41, 45) * Math.min(level, 10);
             else item.health = Utility.getRandomInt(46, 50) * level;
         }
     }
@@ -150,12 +155,12 @@ function addItem() {
         item.type = MItem.Type.Weapon;
         {
             let rng = Utility.getRandomInt(1, 1000);
-            if(rng < 700) item.attack = 1 * level;
-            else if(rng < 800) item.attack = 2 * level;
-            else if(rng < 900) item.attack = 3 * level;
-            else if(rng < 950) item.attack = 4 * level;
-            else if(rng < 975) item.attack = 5 * level;
-            else if(rng < 990) item.attack = 6 * level;
+            if(rng < 700) item.attack = 1 * level * Math.min(level, 10);
+            else if(rng < 800) item.attack = 2 * level * Math.min(level, 10);
+            else if(rng < 900) item.attack = 3 * level * Math.min(level, 10);
+            else if(rng < 950) item.attack = 4 * level * Math.min(level, 10);
+            else if(rng < 975) item.attack = 5 * level * Math.min(level, 10);
+            else if(rng < 990) item.attack = 6 * level * Math.min(level, 10);
             else item.attack = 7 * level;
         }
         {
@@ -164,23 +169,25 @@ function addItem() {
             else if(rng < 950) item.attackRange = 2;
             else if(rng < 975) item.attackRange = 3;
             else if(rng < 990) item.attackRange = 4;
-            else if(rng < 995) item.attackRange = 5;
-            else if(rng < 998) item.attackRange = 6;
+            else if(rng < 994) item.attackRange = 5;
+            else if(rng < 997) item.attackRange = 6;
             else item.attackRange = 7;
         }
         {
             let rng = Utility.getRandomInt(1, 1000);
-            if(rng < 900) item.attackSpeed = 1;
-            else if(rng < 950) item.attackSpeed = 1.5;
-            else if(rng < 975) item.attackSpeed = 2;
-            else if(rng < 990) item.attackSpeed = 2.5;
-            else if(rng < 995) item.attackSpeed = 3;
-            else if(rng < 998) item.attackSpeed = 0.5;
-            else item.attackSpeed = 4;
+            if(rng < 900) item.attackSpeed = Utility.getRandomInt(10, 15) / 10;
+            else if(rng < 950) item.attackSpeed = Utility.getRandomInt(15, 20) / 10;
+            else if(rng < 975) item.attackSpeed = Utility.getRandomInt(20, 25) / 10;
+            else if(rng < 985) item.attackSpeed = Utility.getRandomInt(25, 30) / 10;
+            else if(rng < 990) item.attackSpeed = Utility.getRandomInt(30, 35) / 10;
+            else if(rng < 993) item.attackSpeed = Utility.getRandomInt(35, 40) / 10;
+            else if(rng < 995) item.attackSpeed = Utility.getRandomInt(40, 70) / 10;
+            else if(rng < 997) item.attackSpeed = Utility.getRandomInt(70, 100) / 10;
+            else item.attackSpeed = Utility.getRandomInt(100, 200) / 10;
         }
     }
 
-    this.game.controller.cItems.addItems([item], 'backpack');
+    this.game.controller.cItems.addItems([new MItem(item.type, item.health, item.attack, item.attackSpeed, item.attackRange)], 'backpack');
 }
 
 /**
@@ -188,16 +195,22 @@ function addItem() {
  * @param {number} pos
  * TEMPORARY TODO
  */
-function addEnemy(pos) {
-    const save = this.game.model.save;
-    const data = this.game.model.data;
-
-    let level = save.battle.distance / 100;
-
-    let enemy = new MEnemy(Utility.getRandomInt(0, 10), pos + data.battle.spawnOffset, Math.ceil(level), Math.ceil(level * 20) + 1);
+function addEnemies(pos) {
+    let level = this.save.battle.distance / 100;
+    /** @type {MEnemy[]} */
+    let enemies = [];
+    let arr = [0,1,2,3,4,5,6,7,8,9];
+    let enemyCount = Utility.getRandomInt(1, 1 + Math.min(Math.ceil(level), arr.length - 1));
+    for(let i = 0; i < enemyCount; i++) {
+        let index = Utility.getRandomInt(0, arr.length);
+        arr.splice(index, 1);
+        let enemy = new MEnemy(arr[index], pos + this.data.battle.spawnOffset, Math.ceil(level), Math.ceil(level * 20) + 1);
     
-    save.battle.enemies.push(enemy);
-    this.game.view.vBattle.onEnemiesAdded([enemy]);
+        this.save.battle.enemies.push(enemy);
+        enemies.push(enemy);
+    }
+
+    this.game.view.vBattle.onEvent('enemiesAdded', enemies);
 }
 
 /**
@@ -206,10 +219,7 @@ function addEnemy(pos) {
  * @returns {boolean}
  */
 function isEnemyInRange(enemy) {
-    const save = this.game.model.save;
-    const data = this.game.model.data;
-
-    return save.battle.distance + data.battle.attackRange >= enemy.y;
+    return this.save.battle.distance + this.data.battle.attackRange >= enemy.y;
 }
 
 /**
@@ -217,10 +227,7 @@ function isEnemyInRange(enemy) {
  * @returns {boolean}
  */
 function areAnyEnemiesInRange() {
-    const save = this.game.model.save;
-    const data = this.game.model.data;
-
-    let enemy = save.battle.enemies[0];
+    let enemy = this.save.battle.enemies[0];
     if(enemy && isEnemyInRange.bind(this)(enemy)) {
         return true;
     }
@@ -231,48 +238,12 @@ function areAnyEnemiesInRange() {
  * @this {CBattle}
  */
 function restart() {
-    const save = this.game.model.save;
-    const data = this.game.model.data;
-
-    save.battle.distance = 0;
-    save.battle.velocity = data.battle.startingVelocity;
+    this.save.battle.distance = 0;
+    this.save.battle.velocity = this.data.battle.startingVelocity;
     
-    this.game.view.vBattle.onEnemiesRemoved(save.battle.enemies);
-    save.battle.enemies.splice(0, save.battle.enemies.length);
+    this.game.view.vBattle.onEvent('enemiesRemoved', this.save.battle.enemies);
+    this.save.battle.enemies.splice(0, this.save.battle.enemies.length);
     
-    save.player.curHealth = data.player.maxHealth;
+    this.save.player.curHealth = this.data.player.maxHealth;
     this.game.view.vPlayer.onPlayerResurrected();
-}
-
-/**
- * @this {CBattle}
- */
-function generateNewEnemies() {
-    const save = this.game.model.save;
-
-    let slots = [];
-    for(let i = 0; i < 10; i++) {
-        for(let j = 0; j < 10; j++) {
-            slots.push(i);
-            slots.push(j);
-        }
-    }
-
-
-    let count = Utility.getRandomInt(1, 5);
-    let enemies = [];
-    for(let i = 0; i < count; i++) {
-        let index = Utility.getRandomInt(0, slots.length / 2);
-        let x = slots[index];
-        let y = slots[index + 1];
-        slots.splice(index, 2);
-
-        let enemy = new MEnemy(x, y, 1, 10);
-        enemies.push(enemy);
-    }
-    enemies.sort((a, b) => b.y - a.y || a.x - b.x);
-
-    save.battle.enemies.splice(0, save.battle.enemies.length);
-    save.battle.enemies.push(...enemies);
-    this.game.view.vBattle.onEnemiesAdded([...enemies]);
 }

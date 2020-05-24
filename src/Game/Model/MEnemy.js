@@ -2,13 +2,14 @@ import Model from './../Model.js';
 
 export default class MEnemy extends Model {
     /**
-     * @param {number=} x 
-     * @param {number=} y
-     * @param {number=} attack
-     * @param {number=} health
+     * @param {number} x 
+     * @param {number} y
+     * @param {number} attack
+     * @param {number} health
+     * @param {string=} _path
      */
-    constructor(x, y, attack, health) {
-        super('MEnemy.mjs');
+    constructor(x, y, attack, health, _path) {
+        super(_path ?? 'MEnemy.js');
 
         this.x = x ?? 0;
         this.y = y ?? 0;

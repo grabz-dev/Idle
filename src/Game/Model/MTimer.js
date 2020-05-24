@@ -4,9 +4,10 @@ export default class MTimer extends Model {
     /**
      * 
      * @param {number} max - Time in seconds. 
+     * @param {string=} _path
      */
-    constructor(max) {
-        super('MTimer.js');
+    constructor(max, _path) {
+        super(_path ?? 'MTimer.js');
 
         this.max = max;
         /** @type {number} */

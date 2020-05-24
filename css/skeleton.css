@@ -13,7 +13,7 @@ body {
 
 .ui {
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: column nowrap;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -70,7 +70,9 @@ body {
 
 
 
-
+.ui .child.bottom-0 {
+    flex: 0 0 0;
+}
 
 .ui .child.left-1 {
     flex: 0 0 300px;
@@ -99,7 +101,7 @@ body {
 }
 
 .ui .child.top-1-3 {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     overflow-y: hidden;
 }
 .ui .child.bottom-1-3 {

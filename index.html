@@ -20,36 +20,43 @@
 
   <div class="ui">
     <div id="itemHeld"></div>
-    <div class="child parent col left-1">
-      <div class="child parent col panel edge">
-        <div class="child">Stats</div>
-        <div class="child" id="stats">
-          Distance: <span data-id="distance">0</span><br>
-          Health: <span data-id="curHealth">0</span>/<span data-id="maxHealth">0</span>
+    <div class="child parent row">
+      <div class="child parent col left-1">
+        <div class="child parent col panel edge">
+          <div class="child">Stats</div>
+          <div class="child" id="stats">
+            Time: <span data-id="time">0:00</span><br>
+            Distance: <span data-id="distance">0</span> (Best: <span data-id="distanceBest"></span>)<br>
+            Velocity: <span data-id="velocity"></span><br>
+            Health: <span data-id="curHealth">0</span>/<span data-id="maxHealth">0</span>
+          </div>
+        </div>
+        <div class="child parent col panel edge no-top bottom-1-1">
+          <div class="child">Equipment</div>
+          <div class="child" id="equipment"></div>
         </div>
       </div>
-      <div class="child parent col panel edge no-top bottom-1-1">
-        <div class="child">Equipment</div>
-        <div class="child" id="equipment"></div>
+      <div class="child parent col middle-1">
+        <div class="child parent col top-1-2">
+          <div id="clock">-:--</div>
+        </div>
+        <div class="child parent row bottom-1-2">
+          <div id="enemies"></div>
+        </div>
+      </div>
+      <div class="child parent col right-1">
+        <div class="child parent col panel edge top-1-3">
+          <div class="child">Backpack</div>
+          <div class="child" id="backpack"></div>
+        </div>
+        <div class="child parent col panel edge no-top bottom-1-3">
+          <div class="child">Pouch</div>
+          <div class="child" id="pouch"></div>
+        </div>
       </div>
     </div>
-    <div class="child parent col middle-1">
-      <div class="child parent col top-1-2">
-        <div id="clock">-:--</div>
-      </div>
-      <div class="child parent row bottom-1-2">
-        <div id="enemies"></div>
-      </div>
-    </div>
-    <div class="child parent col right-1">
-      <div class="child parent col panel edge top-1-3">
-        <div class="child">Backpack</div>
-        <div class="child" id="backpack"></div>
-      </div>
-      <div class="child parent col panel edge no-top bottom-1-3">
-        <div class="child">Pouch</div>
-        <div class="child" id="pouch"></div>
-      </div>
+    <div class="child parent row bottom-0">
+      <div id="footer">This game is in early development not meant for distribution. Your save will be deleted. <a href=https://github.com/grabz-dev>For contact, see my GitHub bio.</a></div>
     </div>
   </div>
 

@@ -4,6 +4,8 @@ import View from './../View.js';
 
 import MEnemy from './../Model/MEnemy.js';
 
+import Utility from './../../Utility/Utility.js';
+
 export default class VBattle extends View {
     /**
      * 
@@ -23,71 +25,110 @@ export default class VBattle extends View {
     }
 
     update() {
-        const save = this.game.model.save;
-        const data = this.game.model.data;
+        updateStatElem(this.elems.stats, '[data-id=time]', Utility.getFormattedTime(this.save.timeElapsed));
+        updateStatElem(this.elems.stats, '[data-id=distance]', prettifyDistance(this.save.battle.distance));
+        updateStatElem(this.elems.stats, '[data-id=distanceBest]', prettifyDistance(this.save.battle.distanceBest));
+        updateStatElem(this.elems.stats, '[data-id=velocity]', prettifyDistance(this.save.battle.velocity));
 
-        updateStatElem(this.elems.stats, '[data-id=distance]', (Math.floor(this.game.model.save.battle.distance * 10) / 10) +'');
-
-        const distance = save.battle.distance;
-        for(let enemy of save.battle.enemies) {
+        const distance = this.save.battle.distance;
+        for(let enemy of this.save.battle.enemies) {
             let elem = this.enemies.get(enemy);
             if(!elem) continue;
 
             elem.style.top = `${100 - (enemy.y - distance) * 10}%`;
         }
+
+
+    }
+
+    resume() {
+        this.enemies.clear();
+        this.elems.enemies.innerHTML = '';
+        this.onEvent('enemiesAdded', this.save.battle.enemies);
     }
 
     /**
      * 
-     * @param {MEnemy[]} enemies
+     * @param {'enemiesAdded'|'enemiesRemoved'|'enemiesDamaged'} event 
+     * @param  {...any} params 
      */
-    onEnemiesAdded(enemies) {
-        for(let enemy of enemies) {
-            let elem = this.game.template.tEnemy();
-            elem.style.top = '0%';
-            elem.style.left = enemy.x * 10 + '%';
-            this.enemies.set(enemy, elem);
-            this.elems.enemies.appendChild(elem);
+    onEvent(event, ...params) {
+        if(this.paused) return;
+
+        switch(event) {
+        case 'enemiesAdded': {
+            /** @type {MEnemy[]} */
+            let enemies = params[0];
+            onEnemiesAdded.bind(this)(enemies);
+            break;
         }
-    }
-
-    /**
-     * 
-     * @param {MEnemy[]} enemies 
-     */
-    onEnemiesRemoved(enemies) {
-        for(let enemy of enemies) {
-            let elem = this.enemies.get(enemy);
-            if(elem == null) {
-                console.warn('Tried removing enemy that doesn\'t exist', enemy);
-                continue;
-            }
-            
-            this.enemies.delete(enemy);
-            elem.remove();
+        case 'enemiesRemoved': {
+            /** @type {MEnemy[]} */
+            let enemies = params[0];
+            onEnemiesRemoved.bind(this)(enemies);
+            break;
         }
-    }
-
-    /**
-     * 
-     * @param {MEnemy[]} enemies 
-     */
-    onEnemiesDamaged(enemies) {
-        for(let enemy of enemies) {
-            let elem = this.enemies.get(enemy);
-            if(elem == null) {
-                console.warn('Tried damaging enemy that doesn\'t exist', enemy);
-                continue;
-            }
-            let bar = elem.querySelector('.bar.inner');
-            if(bar == null || !(bar instanceof HTMLElement)) {
-                console.warn('No healthbar on enemy', enemy);
-                continue;
-            }
-            bar.style.transform = `translate(-${100 - (enemy.healthCur / enemy.healthMax * 100)}%)`;
+        case 'enemiesDamaged': {
+            /** @type {MEnemy[]} */
+            let enemies = params[0];
+            onEnemiesDamaged.bind(this)(enemies);
+            break;
+        }
         }
     }
 }
+
+/**
+ * @this {VBattle}
+ * @param {MEnemy[]} enemies
+ */
+function onEnemiesAdded(enemies) {
+    for(let enemy of enemies) {
+        let elem = this.game.template.tEnemy();
+        elem.style.top = '0%';
+        elem.style.left = enemy.x * 10 + '%';
+        this.enemies.set(enemy, elem);
+        this.elems.enemies.appendChild(elem);
+    }
+}
+
+/**
+ * @this {VBattle}
+ * @param {MEnemy[]} enemies
+ */
+function onEnemiesRemoved(enemies) {
+    for(let enemy of enemies) {
+        let elem = this.enemies.get(enemy);
+        if(elem == null) {
+            console.warn('Tried removing enemy that doesn\'t exist', enemy);
+            continue;
+        }
+        
+        this.enemies.delete(enemy);
+        elem.remove();
+    }
+}
+
+/**
+ * @this {VBattle}
+ * @param {MEnemy[]} enemies
+ */
+function onEnemiesDamaged(enemies) {
+    for(let enemy of enemies) {
+        let elem = this.enemies.get(enemy);
+        if(elem == null) {
+            console.warn('Tried damaging enemy that doesn\'t exist', enemy);
+            continue;
+        }
+        let bar = elem.querySelector('.bar.inner');
+        if(bar == null || !(bar instanceof HTMLElement)) {
+            console.warn('No healthbar on enemy', enemy);
+            continue;
+        }
+        bar.style.transform = `translate(-${100 - (enemy.healthCur / enemy.healthMax * 100)}%)`;
+    }
+}
+
 
 /**
  * 
@@ -100,4 +141,16 @@ function updateStatElem(elem, query, value) {
     if(stat) {
         stat.textContent = value;
     }
+}
+
+/**
+ * 
+ * @param {number} number
+ * @returns {string} 
+ */
+function prettifyDistance(number) {
+    number = Math.floor(number * 10) / 10;
+    let str = number+'';
+    if(str.indexOf('.') === -1) str += '.0';
+    return str;
 }

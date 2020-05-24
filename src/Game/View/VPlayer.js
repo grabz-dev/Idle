@@ -20,13 +20,10 @@ export default class VPlayer extends View {
     }
 
     onEquipmentChanged() {
-        const save = this.game.model.save;
-        const data = this.game.model.data;
-
         const stats = this.elems.stats;
 
-        updateStatElem(stats, '[data-id=curHealth]', save.player.curHealth+'');
-        updateStatElem(stats, '[data-id=maxHealth]', data.player.maxHealth+'');
+        updateStatElem(stats, '[data-id=curHealth]', this.save.player.curHealth+'');
+        updateStatElem(stats, '[data-id=maxHealth]', this.data.player.maxHealth+'');
     }
     
     /**
@@ -34,11 +31,11 @@ export default class VPlayer extends View {
      * @param {number} damage 
      */
     onPlayerDamaged(damage) {
-        updateStatElem(this.elems.stats, '[data-id=curHealth]', this.game.model.save.player.curHealth+'');
+        updateStatElem(this.elems.stats, '[data-id=curHealth]', this.save.player.curHealth+'');
     }
     
     onPlayerResurrected() {
-        updateStatElem(this.elems.stats, '[data-id=curHealth]', this.game.model.save.player.curHealth+'');
+        updateStatElem(this.elems.stats, '[data-id=curHealth]', this.save.player.curHealth+'');
     }
 }
 

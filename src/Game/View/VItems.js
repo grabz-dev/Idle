@@ -21,8 +21,6 @@ export default class VItems extends View {
         super(game, updateInterval);
         this.elems = elems;
         
-        const data = this.game.model.data;
-
         /** @type {Map<MItem, HTMLElement>} */
         this.itemsToElems = new Map();
         /** @type {Map<HTMLElement, MItem>} */
@@ -43,22 +41,17 @@ export default class VItems extends View {
             let name = entry[0];
             let holder = entry[1];
 
-            for(let v of data.itemHolders)
+            for(let v of this.data.itemHolders)
                 if(name === v) this.elemsToItemHolders.set(holder, name);
 
             holder.addEventListener('mousedown', onClickHolder.bind({this: this, elem: holder}));
         }
     }
 
-    /**
-     * 
-     * @param {number} updateInterval 
-     */
-    update(updateInterval) {
-        this.refreshItemHeldPosition();
+    update() {
+        refreshItemHeldPosition.bind(this)();
 
-        const save = this.game.model.save;
-        for(let item of save.items.equipment) {
+        for(let item of this.save.items.equipment) {
             let elem = this.itemsToElems.get(item);
             if(elem == null) continue;
             let attackBar = elem.querySelector('.attack-bar');
@@ -67,10 +60,53 @@ export default class VItems extends View {
         }
     }
 
-    refreshItemHeldPosition() {
-        if(this.itemHeld) {
-            const data = this.game.model.data;
-            this.itemHeld.style.transform = `translate(${data.mouse.x - this.itemHeld.offsetWidth / 2}px, ${data.mouse.y - this.itemHeld.offsetHeight / 2}px)`;
+    resume() {
+        this.elems.itemHeld.innerHTML = '';
+        this.itemHeld = null;
+
+        this.itemsToElems.clear();
+        this.elemsToItems.clear();
+        
+        for(let holderElem of Object.values(this.itemHoldersToElems)) {
+            holderElem.innerHTML = '';
+        }
+
+        for(let holderName of this.data.itemHolders) {
+            onItemsAdded.bind(this)(this.save.items[holderName], holderName);
+        }
+        onBackpackSorted.bind(this)();
+    }
+
+    /**
+     * 
+     * @param {'itemsAdded'|'itemsRemoved'|'itemsMoved'|'backpackSorted'} event 
+     * @param  {...any} params 
+     */
+    onEvent(event, ...params) {
+        if(this.paused) return;
+
+        switch(event) {
+        case 'itemsAdded': {
+            /** @type {MItem[]} */ let items = params[0];
+            /** @type {'backpack'|'pouch'|'equipment'} */ let holder = params[1];
+            onItemsAdded.bind(this)(items, holder);
+            break;
+        }
+        case 'itemsRemoved': {
+            /** @type {MItem[]} */ let items = params[0];
+            /** @type {'backpack'|'pouch'|'equipment'} */ let holder = params[1];
+            onItemsRemoved.bind(this)(items, holder);
+            break;
+        }
+        case 'itemsMoved': {
+            /** @type {MItem[]} */ let items = params[0];
+            /** @type {'backpack'|'pouch'|'equipment'} */ let holder = params[1];
+            onItemsMoved.bind(this)(items, holder);
+            break;
+        }
+        case 'backpackSorted': {
+            onBackpackSorted.bind(this)();
+        }
         }
     }
 
@@ -81,89 +117,106 @@ export default class VItems extends View {
     onMouseDown(e) {
         dropItem.bind(this)();
     }
+}
 
-    /**
-     * 
-     * @param {MItem[]} items
-     * @param {'backpack'|'pouch'|'equipment'} holder
-     */
-    onItemsAdded(items, holder) {
-        for(let item of items) {
-            let elem = this.game.template.tItem();
-            elem.addEventListener('mousedown', onClickItem.bind({this: this, elem: elem}));
-            this.itemsToElems.set(item, elem);
-            this.elemsToItems.set(elem, item);
+/**
+ * @this {VItems}
+ * @param {MItem[]} items
+ * @param {'backpack'|'pouch'|'equipment'} holder
+ */
+function onItemsAdded(items, holder) {
+    for(let item of items) {
+        let elem = this.game.template.tItem();
+        elem.addEventListener('mousedown', onClickItem.bind({this: this, elem: elem}));
+        this.itemsToElems.set(item, elem);
+        this.elemsToItems.set(elem, item);
 
-            this.itemHoldersToElems[holder].appendChild(elem);
+        this.itemHoldersToElems[holder].appendChild(elem);
 
-            refreshValue(elem, item);
-            refreshAttribute(elem, item, 'health');
-            refreshAttribute(elem, item, 'attack');
-            refreshAttribute(elem, item, 'attackSpeed');
-            refreshAttribute(elem, item, 'attackRange');
+        refreshValue(elem, item);
+        refreshAttribute(elem, item, 'health');
+        refreshAttribute(elem, item, 'attack');
+        refreshAttribute(elem, item, 'attackSpeed');
+        refreshAttribute(elem, item, 'attackRange');
 
-            //TODO
-            let attackBar = elem.querySelector('.attack-bar');
-            if(!(attackBar instanceof HTMLElement)) continue;
-            if(item.type !== MItem.Type.Weapon)
-                attackBar.style.visibility = 'hidden';
-            else if(item.type === MItem.Type.Weapon && holder !== 'equipment')
-                attackBar.style.visibility = 'hidden';
-            else attackBar.style.visibility = 'visible';
+        //TODO
+        let attackBar = elem.querySelector('.attack-bar');
+        if(!(attackBar instanceof HTMLElement)) continue;
+        if(item.type !== MItem.Type.Weapon)
+            attackBar.style.visibility = 'hidden';
+        else if(item.type === MItem.Type.Weapon && holder !== 'equipment')
+            attackBar.style.visibility = 'hidden';
+        else attackBar.style.visibility = 'visible';
+    }
+}
+
+/**
+ * @this {VItems}
+ * @param {MItem[]} items
+ * @param {'backpack'|'pouch'|'equipment'} holder
+ */
+function onItemsRemoved(items, holder) {
+    for(let item of items) {
+        let elem = this.itemsToElems.get(item);
+
+        if(elem === this.itemHeld)
+            dropItem.bind(this)();
+
+        this.itemsToElems.delete(item);
+        if(elem) {
+            this.elemsToItems.delete(elem);
+            this.itemHoldersToElems[holder].removeChild(elem);
         }
     }
+}
 
-    /**
-     * 
-     * @param {MItem[]} items
-     * @param {'backpack'|'pouch'|'equipment'} holder
-     */
-    onItemsRemoved(items, holder) {
-        for(let item of items) {
-            let elem = this.itemsToElems.get(item);
+/**
+ * @this {VItems}
+ * @param {MItem[]} items
+ * @param {'backpack'|'pouch'|'equipment'} holder
+ */
+function onItemsMoved(items, holder) {
+    for(let item of items) {
+        let elem = this.itemsToElems.get(item);
+        if(elem == null)
+            continue;
+        
+        this.itemHoldersToElems[holder].appendChild(elem);
 
-            if(elem === this.itemHeld)
-                dropItem.bind(this)();
-
-            this.itemsToElems.delete(item);
-            if(elem) {
-                this.elemsToItems.delete(elem);
-                this.itemHoldersToElems[holder].removeChild(elem);
-            }
-        }
+        //TODO
+        let attackBar = elem.querySelector('.attack-bar');
+        if(!(attackBar instanceof HTMLElement)) continue;
+        if(item.type !== MItem.Type.Weapon)
+            attackBar.style.visibility = 'hidden';
+        else if(item.type === MItem.Type.Weapon && holder !== 'equipment')
+            attackBar.style.visibility = 'hidden';
+        else attackBar.style.visibility = 'visible';
     }
+}
 
-    /**
-     * 
-     * @param {MItem[]} items
-     * @param {'backpack'|'pouch'|'equipment'} holder
-     */
-    onItemsMoved(items, holder) {
-        for(let item of items) {
-            let elem = this.itemsToElems.get(item);
-            if(elem == null)
-                continue;
-            
-            this.itemHoldersToElems[holder].appendChild(elem);
+/**
+ * @this {VItems}
+ */
+function onBackpackSorted() {
+    for(let item of this.save.items.backpack) {
+        let elem = this.itemsToElems.get(item);
+        if(!elem || !elem.parentElement) continue;
 
-            //TODO
-            let attackBar = elem.querySelector('.attack-bar');
-            if(!(attackBar instanceof HTMLElement)) continue;
-            if(item.type !== MItem.Type.Weapon)
-                attackBar.style.visibility = 'hidden';
-            else if(item.type === MItem.Type.Weapon && holder !== 'equipment')
-                attackBar.style.visibility = 'hidden';
-            else attackBar.style.visibility = 'visible';
-        }
+        elem.parentElement.appendChild(elem);
     }
+}
 
-    refreshBackpackPositions() {
-        for(let item of this.game.model.save.items.backpack) {
-            let elem = this.itemsToElems.get(item);
-            if(!elem || !elem.parentElement) continue;
 
-            elem.parentElement.appendChild(elem);
-        }
+
+
+
+
+/**
+ * @this {VItems}
+ */
+function refreshItemHeldPosition() {
+    if(this.itemHeld) {
+        this.itemHeld.style.transform = `translate(${this.data.mouse.x - this.itemHeld.offsetWidth / 2}px, ${this.data.mouse.y - this.itemHeld.offsetHeight / 2}px)`;
     }
 }
 
@@ -175,7 +228,7 @@ export default class VItems extends View {
 function refreshValue(elem, item) {
     let e = elem.querySelector('[data-id=value');
     if(e instanceof HTMLElement) {
-        e.textContent = item.getValue()+'';
+        e.textContent = Math.floor(item.getValue() * 10) / 10+'';
     }
 }
 
@@ -202,14 +255,12 @@ function refreshAttribute(elem, item, attrib) {
  * @this {VItems}
  */
 function dropItem() {
-    const data = this.game.model.data;
-
     if(this.itemHeld) {
         this.itemHeld.style.transform = '';
         this.itemHeld.style.pointerEvents = '';
         let item = this.elemsToItems.get(this.itemHeld);
         if(item) {
-            let holderName = data.itemsToHolders.get(item);
+            let holderName = this.data.itemsToHolders.get(item);
             if(holderName)
                 this.itemHoldersToElems[holderName].appendChild(this.itemHeld);
         }
@@ -232,15 +283,15 @@ function onClickItem(e) {
         that.itemHeld = elem;
         that.itemHeld.style.pointerEvents = 'none';
         that.elems.itemHeld.appendChild(that.itemHeld);
-        that.refreshItemHeldPosition();
+        refreshItemHeldPosition.bind(that)();
     }
     else {
         let item1 = that.elemsToItems.get(elem);
         let item2 = that.elemsToItems.get(that.itemHeld);
         if(item1 == null || item2 == null) return;
 
-        let item1holderName = that.game.model.data.itemsToHolders.get(item1);
-        let item2holderName = that.game.model.data.itemsToHolders.get(item2);
+        let item1holderName = that.data.itemsToHolders.get(item1);
+        let item2holderName = that.data.itemsToHolders.get(item2);
         if(item1holderName == null || item2holderName == null) return;
 
         that.game.controller.cItems.moveItems([item1], item2holderName);

@@ -10,9 +10,10 @@ export default class Color extends Model {
      * @param {number} g Green component of the color, between 0 - 255.
      * @param {number} b Blue component of the color, between 0 - 255.
      * @param {number} a Opacity of the color, between 0 - 255.
+     * @param {string=} _path
      */
-    constructor(r, g, b, a) {
-        super('MColor.js');
+    constructor(r, g, b, a, _path) {
+        super(_path ?? 'MColor.js');
 
         this.r = r;
         this.g = g;

@@ -8,6 +8,10 @@ class View {
      */
     constructor(game, updateInterval) {
         this.game = game;
+        this.save = game.model.save;
+        this.data = game.model.data;
+        
+        this.paused = false;
         this.updateInterval = updateInterval;
         this.updateClock = updateInterval;
     }
@@ -15,9 +19,17 @@ class View {
     resume() {
 
     }
+
+    pause() {
+        this.paused = true;
+    }
+    unpause() {
+        this.paused = false;
+        this.resume();
+    }
 }
 
-/** @type {null|((updateInterval: number) => void)} */
+/** @type {null|(() => void)} */
 View.prototype.update = null;
 
 /** @type {null|((e: MouseEvent) => void)} */

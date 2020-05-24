@@ -5,14 +5,15 @@ import MTimer from './MTimer.js';
 export default class MItem extends Model {
     /**
      * 
-     * @param {MItem.Type=} type
-     * @param {number=} health
-     * @param {number=} attack
-     * @param {number=} attackSpeed
-     * @param {number=} attackRange
+     * @param {MItem.Type} type
+     * @param {number} health
+     * @param {number} attack
+     * @param {number} attackSpeed
+     * @param {number} attackRange
+     * @param {string=} _path
      */
-    constructor(type, health, attack, attackSpeed, attackRange) {
-        super('MItem.mjs');
+    constructor(type, health, attack, attackSpeed, attackRange, _path) {
+        super(_path ?? 'MItem.js');
 
         this.type = type ?? MItem.Type.Armor;
         this.health = health ?? 0;
