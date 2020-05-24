@@ -204,10 +204,8 @@ function onHolderSorted(holderName) {
     for(let item of this.save.items[holderName]) {
         let elem = this.itemsToElems.get(item);
         if(!elem || !elem.parentElement) continue;
-
-        let parent = elem.parentElement;
-        parent.removeChild(elem);
-        parent.appendChild(elem);
+        
+        elem.parentElement.appendChild(elem);
     }
 }
 

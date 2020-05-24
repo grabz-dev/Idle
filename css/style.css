@@ -167,18 +167,21 @@
 .item .box .text {
     display: none;
     position: relative;
-    padding-left: 3px;
-    padding-right: 3px;
+    padding-left: 14px;
+    padding-right: 14px;
 }
 
 .item .box .text .icon {
+    position: absolute;
     display: block;
     width: 12px;
 }
 .item .box.left .text .icon {
-    float: left;
+    top: 0;
+    left: 3px;
 }
 .item .box.right .text .icon {
-    float: right;
+    top: 0;
+    right: 3px;
 }
 
