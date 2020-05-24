@@ -90,7 +90,7 @@ export default class CBattle extends Controller {
                 this.save.player.curHealth -= enemy.attack;
                 this.game.view.vPlayer.onPlayerDamaged(enemy.attack);
                 if(this.save.player.curHealth <= 0) {
-                    restart.bind(this)();
+                    this.restart();
                     return true;
                 }
             }
@@ -120,6 +120,16 @@ export default class CBattle extends Controller {
         else {
             this.save.battle.velocity = this.data.battle.startingVelocity;
         }
+    }
+    restart() {
+        this.save.battle.distance = 0;
+        this.save.battle.velocity = this.data.battle.startingVelocity;
+        
+        this.game.view.vBattle.onEvent('enemiesRemoved', this.save.battle.enemies);
+        this.save.battle.enemies.splice(0, this.save.battle.enemies.length);
+        
+        this.save.player.curHealth = this.data.player.maxHealth;
+        this.game.view.vPlayer.onPlayerResurrected();
     }
 }
 
@@ -232,18 +242,4 @@ function areAnyEnemiesInRange() {
         return true;
     }
     return false;
-}
-
-/**
- * @this {CBattle}
- */
-function restart() {
-    this.save.battle.distance = 0;
-    this.save.battle.velocity = this.data.battle.startingVelocity;
-    
-    this.game.view.vBattle.onEvent('enemiesRemoved', this.save.battle.enemies);
-    this.save.battle.enemies.splice(0, this.save.battle.enemies.length);
-    
-    this.save.player.curHealth = this.data.player.maxHealth;
-    this.game.view.vPlayer.onPlayerResurrected();
 }

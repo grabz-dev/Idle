@@ -22,6 +22,11 @@ export default class VBattle extends View {
 
         /** @type {Map<MEnemy, HTMLElement>} */
         this.enemies = new Map();
+
+        let restart = this.elems.stats.querySelector('[data-id=restart]');
+        if(restart) {
+            restart.addEventListener('click', () => this.game.controller.cBattle.restart());
+        }
     }
 
     update() {
