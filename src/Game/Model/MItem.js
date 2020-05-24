@@ -27,7 +27,7 @@ export default class MItem extends Model {
      * @returns {number}
      */
     getValue() {
-        return this.health + (this.attack * this.attackSpeed * this.attackRange);
+        return Math.sqrt(this.health + (this.attack * this.attackSpeed * this.attackRange));
     }
 
     /**
