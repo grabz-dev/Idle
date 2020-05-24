@@ -34,6 +34,7 @@ export default class VBattle extends View {
         updateStatElem(this.elems.stats, '[data-id=distance]', prettifyDistance(this.save.battle.distance));
         updateStatElem(this.elems.stats, '[data-id=distanceBest]', prettifyDistance(this.save.battle.distanceBest));
         updateStatElem(this.elems.stats, '[data-id=velocity]', prettifyDistance(this.save.battle.velocity));
+        updateStatElem(this.elems.stats, '[data-id=velocityBest]', prettifyDistance(this.save.battle.velocityBest));
 
         const distance = this.save.battle.distance;
         for(let enemy of this.save.battle.enemies) {

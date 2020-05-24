@@ -110,6 +110,9 @@ export default class CBattle extends Controller {
             if(this.save.battle.distance > this.save.battle.distanceBest) {
                 this.save.battle.distanceBest = this.save.battle.distance;
             }
+            if(this.save.battle.velocity > this.save.battle.velocityBest) {
+                this.save.battle.velocityBest = this.save.battle.velocity;
+            }
 
             let newPosInt = Math.floor(this.save.battle.distance);
 

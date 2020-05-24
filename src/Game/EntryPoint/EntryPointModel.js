@@ -14,7 +14,8 @@ export default class EntryPointModel {
                 enemies: /** @type {MEnemy[]} */([]),
                 distance: 0, //in meters
                 distanceBest: 0,
-                velocity: 0
+                velocity: 0,
+                velocityBest: 0,
             },
             items: {
                 backpack: /** @type {MItem[]} */([]),
