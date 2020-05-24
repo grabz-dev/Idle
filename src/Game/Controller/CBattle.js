@@ -28,45 +28,42 @@ export default class CBattle extends Controller {
      * @param {number} frameTime 
      */
     update(frameTime) {
-        const nearestEnemy = this.save.battle.enemies[0];
-
         let move = true;
 
         for(let item of this.save.items.equipment) {
             item.attackTimer += frameTime / 1000;
         }
 
-        if(nearestEnemy) {
-            if(isEnemyInRange.bind(this)(nearestEnemy)) {
-                move = false;
-                this.save.battle.distance = nearestEnemy.y - this.data.battle.attackRange;
-
-                for(let item of this.save.items.equipment) {
-                    if(item.attack <= 0) continue;
-        
-                    item.attackTimer += frameTime / 1000;
-                    if(item.attackTimer >= 1 / item.attackSpeed) {
-                        item.attackTimer -= 1 / item.attackSpeed;
-        
-                        let enemies = this.save.battle.enemies.slice(0, item.attackRange);
-                        for(let enemy of enemies)
-                            enemy.healthCur -= item.attack;
-                        this.game.view.vBattle.onEvent('enemiesDamaged', enemies);
-                        for(let enemy of enemies) {
-                            if(enemy.healthCur <= 0) {
-                                this.save.battle.enemies.splice(0, 1);
-                                addItem.bind(this)();
-                                this.game.view.vBattle.onEvent('enemiesRemoved', [enemy]);
-                            }
-                        }
-
-                        if(!areAnyEnemiesInRange.bind(this)())
+        let nearestEnemy = this.save.battle.enemies[0];
+        if(nearestEnemy && isEnemyInRangeOfAttack.bind(this)(nearestEnemy)) {
+            for(let item of this.save.items.equipment) {
+                if(item.attack <= 0) continue;
+    
+                item.attackTimer += frameTime / 1000;
+                if(item.attackTimer >= 1 / item.attackSpeed) {
+                    item.attackTimer -= 1 / item.attackSpeed;
+    
+                    let enemies = this.save.battle.enemies.slice(0, item.attackRange);
+                    for(let i = 0; i < enemies.length; i++) {
+                        let enemy = enemies[i];
+                        if(!isEnemyInRangeOfAttack.bind(this)(enemy)) {
+                            enemies.splice(i, enemies.length);
                             break;
+                        }
+                        enemy.healthCur -= item.attack;
                     }
-                }
+                    this.game.view.vBattle.onEvent('enemiesDamaged', enemies);
+                    for(let enemy of enemies) {
+                        if(enemy.healthCur <= 0) {
+                            this.save.battle.enemies.splice(0, 1);
+                            addItem.bind(this)();
+                            this.game.view.vBattle.onEvent('enemiesRemoved', [enemy]);
+                        }
+                    }
 
-                if(!areAnyEnemiesInRange.bind(this)())
-                    move = true;
+                    if(!areAnyEnemiesInRangeOfAttack.bind(this)())
+                        break;
+                }
             }
         }
 
@@ -80,21 +77,28 @@ export default class CBattle extends Controller {
             enemy.attackTimer += frameTime / 1000;
         }
 
-        this.save.battle.enemies.some((enemy => {
-            if(!isEnemyInRange.bind(this)(enemy))
-                return true;
+        nearestEnemy = this.save.battle.enemies[0];
+        if(nearestEnemy && isEnemyInRangeOfReceive.bind(this)(nearestEnemy)) {
+            console.log('receive');
+            move = false;
+            this.save.battle.distance = nearestEnemy.y - this.data.battle.receiveRange;
 
-            if(enemy.attackTimer >= 1 / 1) {
-                enemy.attackTimer -= 1 / 1;
-
-                this.save.player.curHealth -= enemy.attack;
-                this.game.view.vPlayer.onPlayerDamaged(enemy.attack);
-                if(this.save.player.curHealth <= 0) {
-                    this.restart();
+            this.save.battle.enemies.some((enemy => {
+                if(!isEnemyInRangeOfReceive.bind(this)(enemy))
                     return true;
+    
+                if(enemy.attackTimer >= 1 / 1) {
+                    enemy.attackTimer -= 1 / 1;
+    
+                    this.save.player.curHealth -= enemy.attack;
+                    this.game.view.vPlayer.onPlayerDamaged(enemy.attack);
+                    if(this.save.player.curHealth <= 0) {
+                        this.restart();
+                        return true;
+                    }
                 }
-            }
-        }));
+            }));
+        }
 
         for(let enemy of this.save.battle.enemies) {
             if(enemy.attackTimer >= 1 / 1)
@@ -231,7 +235,16 @@ function addEnemies(pos) {
  * @param {MEnemy} enemy
  * @returns {boolean}
  */
-function isEnemyInRange(enemy) {
+function isEnemyInRangeOfReceive(enemy) {
+    return this.save.battle.distance + this.data.battle.receiveRange >= enemy.y;
+}
+
+/**
+ * @this {CBattle}
+ * @param {MEnemy} enemy
+ * @returns {boolean}
+ */
+function isEnemyInRangeOfAttack(enemy) {
     return this.save.battle.distance + this.data.battle.attackRange >= enemy.y;
 }
 
@@ -239,9 +252,9 @@ function isEnemyInRange(enemy) {
  * @this {CBattle}
  * @returns {boolean}
  */
-function areAnyEnemiesInRange() {
+function areAnyEnemiesInRangeOfAttack() {
     let enemy = this.save.battle.enemies[0];
-    if(enemy && isEnemyInRange.bind(this)(enemy)) {
+    if(enemy && isEnemyInRangeOfAttack.bind(this)(enemy)) {
         return true;
     }
     return false;

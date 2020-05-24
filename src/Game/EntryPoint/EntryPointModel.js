@@ -35,7 +35,8 @@ export default class EntryPointModel {
             battle: {
                 acceleration: 1.0, //per second
                 spawnOffset: 11,
-                attackRange: 1,
+                attackRange: 10,
+                receiveRange: 1,
                 startingVelocity: 1.0,
             },
             itemHolders: /** @type {['backpack', 'pouch', 'equipment']} */(['backpack', 'pouch', 'equipment']),
