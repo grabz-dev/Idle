@@ -26,8 +26,12 @@ document.addEventListener('mousedown', e => {
 entryPoint.model.loadGame().then(() => {
     for(let controller of controllers)
         controller.awake();
+    for(let controller of controllers)
+        controller.start();
 
     setInterval(entryPoint.model.saveGame.bind(entryPoint.model), 5000);
+
+    let paused = false;
 
     //const
     const save = entryPoint.model.save;
@@ -35,7 +39,7 @@ entryPoint.model.loadGame().then(() => {
     
     //frame based
     let lastTimestamp = 0;
-    let timeLeft = Math.min(Date.now() - save.timestamp, 1000 * 60 * 60 * 24);
+    let timeLeft = Math.min(Date.now() - save.timestamp, 1000 * 60 * 60 * 1);
     let catchup = false;
     
     requestAnimationFrame(loop);
@@ -44,47 +48,60 @@ entryPoint.model.loadGame().then(() => {
      * @param {DOMHighResTimeStamp} timestamp 
      */
     function loop(timestamp) {
-        timeLeft += timestamp - lastTimestamp;
-        lastTimestamp = timestamp;
+        if(!paused) {
+            timeLeft += timestamp - lastTimestamp;
+            lastTimestamp = timestamp;
 
-        catchup = false;
-        if(timeLeft >= frameTime * 60) {
-            catchup = true;
-            for(let view of views) {
-                view.pause();
-            }
-        }
-
-        while(timeLeft >= frameTime) {
-            timeLeft -= frameTime;
-            save.timeElapsed += frameTime;
-
-            for(let controller of controllers) {
-                if(typeof controller.update === 'function')
-                    controller.update(frameTime);
-            }
-
-            if(!catchup) {
+            catchup = false;
+            if(timeLeft >= frameTime * 60) {
+                catchup = true;
                 for(let view of views) {
-                    view.updateClock += frameTime;
-                    if(view.updateClock >= view.updateInterval) {
-                        view.updateClock = 0;
-                        if(view.update != null)
-                            view.update();
+                    view.pause();
+                }
+            }
+
+            while(timeLeft >= frameTime) {
+                timeLeft -= frameTime;
+                save.timeElapsed += frameTime;
+
+                for(let controller of controllers) {
+                    if(typeof controller.update === 'function')
+                        controller.update(frameTime);
+                }
+
+                if(!catchup) {
+                    for(let view of views) {
+                        view.updateClock += frameTime;
+                        if(view.updateClock >= view.updateInterval) {
+                            view.updateClock = 0;
+                            if(view.update != null)
+                                view.update();
+                        }
                     }
                 }
             }
-        }
 
-        if(catchup) {
-            for(let view of views) {
-                view.unpause();
+            if(catchup) {
+                console.log('Resume');
+                for(let view of views) {
+                    view.unpause();
+                }
             }
         }
 
         requestAnimationFrame(loop);
     }
 
+    /**
+     * 
+     * @param {boolean} b 
+     */
+    function pause(b) {
+        paused = b;
+    }
+
     // @ts-ignore
     window.game = entryPoint;
+    // @ts-ignore
+    window.game.pause = pause;
 });

@@ -10,6 +10,8 @@ export default class EntryPointElems {
             stats: /** @type {HTMLElement} */(document.getElementById('stats')),
             itemHeld: /** @type {HTMLElement} */(document.getElementById('itemHeld')),
             clock: /** @type {HTMLElement} */(document.getElementById('clock')),
+            accumulator: /** @type {HTMLElement} */(document.getElementById('accumulator')),
+            forge: /** @type {HTMLElement} */(document.getElementById('forge')),
         };
 
         for(let entry of Object.entries(this.all)) {

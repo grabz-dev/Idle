@@ -14,6 +14,10 @@ class Controller {
     awake() {
 
     }
+
+    start() {
+        
+    }
 }
 
 /** @type {null|((frameTime: number) => void)} */

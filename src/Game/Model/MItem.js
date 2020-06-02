@@ -6,28 +6,45 @@ export default class MItem extends Model {
     /**
      * 
      * @param {MItem.Type} type
+     * @param {number} ilvl
+     * @param {number} tier
      * @param {number} health
      * @param {number} attack
      * @param {number} attackSpeed
      * @param {number} attackRange
+     * @param {number} attackAOE
      * @param {string=} _path
      */
-    constructor(type, health, attack, attackSpeed, attackRange, _path) {
+    constructor(type, ilvl, tier, health, attack, attackSpeed, attackRange, attackAOE, _path) {
         super(_path ?? 'MItem.js');
 
         this.type = type ?? MItem.Type.Armor;
-        this.health = health ?? 0;
+        this.ilvl = ilvl ?? 0;
+        this.tier = tier ?? 0;
+        this.healthMax = health ?? 0;
+        this.healthCur = health ?? 0;
         this.attack = attack ?? 0;
         this.attackSpeed = attackSpeed ?? 0;
         this.attackRange = attackRange ?? 0;
+        this.attackAOE = attackAOE ?? 0;
         this.attackTimer = 0;
+    }
+
+    reset() {
+        this.attackTimer = 0;
+        this.healthCur = this.healthMax;
     }
 
     /**
      * @returns {number}
      */
     getValue() {
-        return Math.sqrt(this.health + (this.attack * this.attackSpeed * this.attackRange));
+        let value = this.healthMax;
+        value += this.attack * this.attackSpeed;
+
+        value *= Math.pow(10, this.tier - 1);
+
+        return Math.sqrt(value);
     }
 
     /**
@@ -36,10 +53,14 @@ export default class MItem extends Model {
     serialize() {
         return Object.assign(super.serialize(), {
             type: this.type,
-            health: this.health,
+            ilvl: this.ilvl,
+            tier: this.tier,
+            healthMax: this.healthMax,
+            healthCur: this.healthCur,
             attack: this.attack,
             attackSpeed: this.attackSpeed,
             attackRange: this.attackRange,
+            attackAOE: this.attackAOE,
         });
     }
 
@@ -48,10 +69,14 @@ export default class MItem extends Model {
      */
     deserialize(obj) {
         this.type = obj.type;
-        this.health = obj.health;
+        this.ilvl = obj.ilvl;
+        this.tier = obj.tier;
+        this.healthMax = obj.healthMax;
+        this.healthCur = obj.healthCur;
         this.attack = obj.attack;
         this.attackSpeed = obj.attackSpeed;
         this.attackRange = obj.attackRange;
+        this.attackAOE = obj.attackAOE;
     }
 }
 

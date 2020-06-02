@@ -5,6 +5,8 @@ import View from './../View.js';
 import MItem from './../Model/MItem.js';
 import TItem from './../Template/TItem.js';
 
+import Utility from './../../Utility/Utility.js';
+
 export default class VPlayer extends View {
     /**
      * 
@@ -22,8 +24,8 @@ export default class VPlayer extends View {
     onEquipmentChanged() {
         const stats = this.elems.stats;
 
-        updateStatElem(stats, '[data-id=curHealth]', this.save.player.curHealth+'');
-        updateStatElem(stats, '[data-id=maxHealth]', this.data.player.maxHealth+'');
+        updateStatElem(stats, '[data-id=curHealth]', Utility.getCurHealthFromItems(this.save.items.equipment) +'');
+        updateStatElem(stats, '[data-id=maxHealth]', Utility.getMaxHealthFromItems(this.save.items.equipment) +'');
     }
     
     /**
@@ -31,11 +33,11 @@ export default class VPlayer extends View {
      * @param {number} damage 
      */
     onPlayerDamaged(damage) {
-        updateStatElem(this.elems.stats, '[data-id=curHealth]', this.save.player.curHealth+'');
+        updateStatElem(this.elems.stats, '[data-id=curHealth]', Utility.getCurHealthFromItems(this.save.items.equipment)+'');
     }
     
     onPlayerResurrected() {
-        updateStatElem(this.elems.stats, '[data-id=curHealth]', this.save.player.curHealth+'');
+        updateStatElem(this.elems.stats, '[data-id=curHealth]', Utility.getCurHealthFromItems(this.save.items.equipment)+'');
     }
 }
 

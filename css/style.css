@@ -29,9 +29,10 @@ button {
     -moz-user-select: none;
     -ms-user-select: none;
     -webkit-user-select: none;
+    z-index: 100;
 }
 #itemHeld {
-    z-index: 100;
+    z-index: 101;
     pointer-events: none;
 }
 
@@ -66,37 +67,99 @@ button {
 }
 
 #dim {
+    position: absolute;
     width: 100%;
     height: 100%;
     background-color: black;
+    z-index: 1;
 }
 
-#enemies {
+/*#enemies {
     position: relative;
     flex: 0 0 460px;
     height: 460px;
     box-shadow: 0 0 5px 5px inset green;
     overflow: hidden;
+}*/
+
+#enemies {
+    position: absolute;
+    top: 0;
+    left: calc(42% - 230px);
+    width: 460px;
+    height: 460px;
+    box-shadow: 0 0 5px 5px inset green;
+    overflow: hidden;
 }
 
-#enemies > div {
+.enemy {
     position: absolute;
     width: 10%;
     height: 10%;
-    border: 1px solid red;
+    border: 1px solid;
+    border-color: white;
+    background-color: #ffffff5c;
+    box-shadow: 1px 1px black;
+    box-sizing: border-box;
+}
+
+.enemy .bar.group {
+    display: flex;
+    flex-flow: row nowrap;
+    height: 20%;
+    border: 1px solid black;
     box-sizing: border-box;
 }
 
 .enemy .bar.outer {
-    height: 20%;
-    background-color: red;
+    flex: 1 0 0;
+    background-color: #f00;
     overflow: hidden;
 }
 
 .enemy .bar.inner {
+    width: calc(100% - 1px);
     height: 100%;
-    background-color: green;
+    background-color: #0f0;
     transition: transform 300ms ease-out;
+    border-right: 1px dotted black;
+}
+
+.enemy .health {
+    width: 100%;
+    font-size: 12px;
+    line-height: 12px;
+    height: 30%;
+}
+
+.enemy .attack {
+    display: flex;
+    width: 100%;
+    font-size: 12px;
+    line-height: 12px;
+    height: 50%;
+}
+
+.enemy .attack .entry {
+    flex: 1 0 0;
+    align-self: end;
+    position: relative;
+    width: 100%;
+    height: 50%;
+    overflow: hidden;
+    float: right;
+}
+
+.enemy .attack .entry .bar {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #0004;
+}
+
+
+.enemy .health > span {
+    text-align: center;
 }
 
 #backpack, #pouch, #equipment, #stats {
@@ -122,7 +185,7 @@ button {
     overflow: hidden;
 
     float: left;
-    box-sizing: content-box;
+    box-sizing: border-box;
     border: var(--border) solid black;
     width: calc(var(--size) - var(--margin) * 2 - var(--border) * 2);
     height: calc(var(--size) - var(--margin) * 2 - var(--border) * 2);
@@ -144,9 +207,22 @@ button {
     position: relative;
     width: 100%;
     height: 12px;
-    text-align: center;
     background-color: #9b6a29;
-    line-height: 10px;
+    line-height: 11px;
+}
+
+.item .value * {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.item .value [data-id='value'] {
+    text-align: center;
+}
+
+.item .tier {
+    position: absolute;
 }
 
 .item .attack-bar {
@@ -190,3 +266,73 @@ button {
     right: 3px;
 }
 
+
+#accumulator, #forge {
+    flex: 0 1 100%;
+    overflow: hidden;
+}
+
+#accumulator .container {
+    position: relative;
+    flex: 0 0 55%;
+    width: 100%;
+    height: 100%;
+    border: 2px solid black;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    box-sizing: border-box;
+}
+
+#accumulator .info {
+    flex: 0 1 45%;
+    width: 100%;
+    height: 100%;
+    margin-left: 0.6vw;
+}
+
+#accumulator .glass {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #00ffff40;
+    background: linear-gradient(-45deg, #0090ff70 0%, #00ffff30 100%);
+    border-radius: 0 0 10px 10px;
+}
+#accumulator .liquid {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 0;
+    background-color: red;
+    border-radius: 0 0 10px 10px;
+}
+#accumulator .container .text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+}
+#accumulator .container .text.bottom {
+    bottom: 0;
+}
+#accumulator .container .text.top {
+    top: 0;
+}
+#accumulator .container .text.middle {
+    height: 100%;
+    top: calc(50% - 15px);
+    font-size: 30px;
+    line-height: 30px;
+}
+
+#accumulator .box {
+    width: 100%;
+    text-align: center;
+    border: 1px solid black;
+    box-sizing: border-box;
+    margin-bottom: 5px;
+}
+
+#forge .box {
+    flex: 0 1 50%;
+    border: 1px solid black;
+}

@@ -24,6 +24,7 @@ export default class VBattle extends View {
         this.enemies = new Map();
 
         let restart = this.elems.stats.querySelector('[data-id=restart]');
+        //TODO
         if(restart) {
             restart.addEventListener('click', () => this.game.controller.cBattle.restart());
         }
@@ -37,11 +38,27 @@ export default class VBattle extends View {
         updateStatElem(this.elems.stats, '[data-id=velocityBest]', prettifyDistance(this.save.battle.velocityBest));
 
         const distance = this.save.battle.distance;
-        for(let enemy of this.save.battle.enemies) {
-            let elem = this.enemies.get(enemy);
-            if(!elem) continue;
-
+        for(let [enemy, elem] of [...this.enemies.entries()]) {
             elem.style.top = `${100 - (enemy.y - distance) * 10}%`;
+
+            if(enemy.y - distance <= 0) {
+                this.enemies.delete(enemy);
+                elem.remove();
+                continue;
+            }
+
+            const bars = elem.querySelectorAll('.attack .entry .bar');
+            let i = 0;
+            for(let item of enemy.items) {
+                if(item.attack <= 0) continue;
+                if(i >= 2) break;
+
+                let bar = bars[0];
+                if(!bar || !(bar instanceof HTMLElement)) throw new Error('VBattle.update: enemy doesn\'t have enough .attack .entry .bar descendants');
+                bar.style.transform = `translateX(-${100 - item.attackTimer / (1 / item.attackSpeed) * 100}%)`;
+
+                i++;
+            }
         }
 
 
@@ -55,7 +72,7 @@ export default class VBattle extends View {
 
     /**
      * 
-     * @param {'enemiesAdded'|'enemiesRemoved'|'enemiesDamaged'} event 
+     * @param {'enemiesAdded'|'enemiesRemoved'|'enemiesDamaged'|'enemiesRemovedAll'} event 
      * @param  {...any} params 
      */
     onEvent(event, ...params) {
@@ -63,21 +80,23 @@ export default class VBattle extends View {
 
         switch(event) {
         case 'enemiesAdded': {
-            /** @type {MEnemy[]} */
-            let enemies = params[0];
+            /** @type {MEnemy[]} */ let enemies = params[0];
             onEnemiesAdded.bind(this)(enemies);
             break;
         }
         case 'enemiesRemoved': {
-            /** @type {MEnemy[]} */
-            let enemies = params[0];
-            onEnemiesRemoved.bind(this)(enemies);
+            /** @type {MEnemy[]} */ let enemies = params[0];
+            /** @type {boolean} */ let death = params[1];
+            onEnemiesRemoved.bind(this)(enemies, death);
             break;
         }
         case 'enemiesDamaged': {
-            /** @type {MEnemy[]} */
-            let enemies = params[0];
+            /** @type {MEnemy[]} */ let enemies = params[0];
             onEnemiesDamaged.bind(this)(enemies);
+            break;
+        }
+        case 'enemiesRemovedAll': {
+            onEnemiesRemovedAll.bind(this)();
             break;
         }
         }
@@ -91,6 +110,76 @@ export default class VBattle extends View {
 function onEnemiesAdded(enemies) {
     for(let enemy of enemies) {
         let elem = this.game.template.tEnemy();
+
+        {
+            const group = elem.querySelector('.bar.group');
+            if(!group) throw new Error('VBattle.onEnemiesAdded: .bar.group not found');
+            const outer = elem.querySelector('.bar.outer');
+            if(!outer) throw new Error('VBattle.onEnemiesAdded: .bar.outer not found');
+            
+            let i = 0;
+            for(let item of [...enemy.items].reverse()) {
+                if(item.healthMax <= 0) continue;
+                if(i === 0) {
+                    i++;
+                    continue;
+                }
+                group.appendChild(outer.cloneNode(true));
+            }
+
+            i = 0;
+            const outers = group.querySelectorAll('.bar.outer');
+            for(let item of [...enemy.items].reverse()) {
+                if(item.healthMax <= 0) continue;
+
+                let outer = outers[i];
+                if(!outer || !(outer instanceof HTMLElement)) throw new Error('VBattle.onEnemiesAdded: .bar.group doesn\'t have enough .bar.outer descendants');
+                outer.style.flexGrow = item.healthMax+'';
+
+                i++;
+            }
+        }
+
+        {
+            const health = elem.querySelector('.health [data-id=healthMax]');
+            if(!health) throw new Error('VBattle.onEnemiesAdded: .health [data-id=healthMax] not found');
+            health.textContent = Utility.getMaxHealthFromItems(enemy.items)+'';
+        }
+
+        {
+            const attack = elem.querySelector('.attack');
+            if(!attack) throw new Error('VBattle.onEnemiesAdded: .attack not found');
+            const entry = elem.querySelector('.attack .entry');
+            if(!entry) throw new Error('VBattle.onEnemiesAdded: .attack .entry not found');
+
+            let i = 0;
+            for(let item of enemy.items) {
+                if(item.attack <= 0) continue;
+                if(i === 0) {
+                    i++;
+                    continue;
+                }
+                if(i >= 2) break;
+
+                attack.appendChild(entry.cloneNode(true));
+
+                i++;
+            }
+
+            i = 0;
+            const labels = attack.querySelectorAll('.entry [data-id=attack]');
+            for(let item of enemy.items) {
+                if(item.attack <= 0) continue;
+                if(i >= 2) break;
+
+                let label = labels[i];
+                if(!label) throw new Error('VBattle.onEnemiesAdded: .attack doesn\'t have enough .entry [data-id=attack] descendants');
+                label.textContent = item.attack+'';
+
+                i++;
+            }
+        }
+        
         elem.style.top = '0%';
         elem.style.left = enemy.x * 10 + '%';
         this.enemies.set(enemy, elem);
@@ -101,17 +190,17 @@ function onEnemiesAdded(enemies) {
 /**
  * @this {VBattle}
  * @param {MEnemy[]} enemies
+ * @param {boolean} death
  */
-function onEnemiesRemoved(enemies) {
+function onEnemiesRemoved(enemies, death) {
     for(let enemy of enemies) {
         let elem = this.enemies.get(enemy);
-        if(elem == null) {
-            console.warn('Tried removing enemy that doesn\'t exist', enemy);
-            continue;
+        if(!elem) throw new Error('VBattle.onEnemiesRemoved: elem not found');
+
+        if(!death) {
+            this.enemies.delete(enemy);
+            elem.remove();
         }
-        
-        this.enemies.delete(enemy);
-        elem.remove();
     }
 }
 
@@ -122,17 +211,39 @@ function onEnemiesRemoved(enemies) {
 function onEnemiesDamaged(enemies) {
     for(let enemy of enemies) {
         let elem = this.enemies.get(enemy);
-        if(elem == null) {
-            console.warn('Tried damaging enemy that doesn\'t exist', enemy);
-            continue;
+        if(!elem) throw new Error('VBattle.onEnemiesDamaged: elem not found');
+        const group = elem.querySelector('.bar.group');
+        if(!group) throw new Error('VBattle.onEnemiesDamaged: .bar.group not found');
+
+        let i = 0;
+        const inners = group.querySelectorAll('.bar.inner');
+        let hasHealthRemaining = false;
+        for(let item of [...enemy.items].reverse()) {
+            if(item.healthMax <= 0) continue;
+
+            let inner = inners[i];
+            if(!inner || !(inner instanceof HTMLElement)) throw new Error('VBattle.onEnemiesDamaged: .bar.group doesn\'t have enough .bar.inner descendants');
+
+            inner.style.transform = `translate(-${100 - (item.healthCur / item.healthMax * 100)}%)`;
+
+            if(item.healthCur > 0)
+                hasHealthRemaining = true;
+            i++;
         }
-        let bar = elem.querySelector('.bar.inner');
-        if(bar == null || !(bar instanceof HTMLElement)) {
-            console.warn('No healthbar on enemy', enemy);
-            continue;
+
+        if(!hasHealthRemaining) {
+            elem.style.backgroundColor = '#0000005c';
+            elem.style.borderColor = 'black';
         }
-        bar.style.transform = `translate(-${100 - (enemy.healthCur / enemy.healthMax * 100)}%)`;
     }
+}
+
+/**
+ * @this {VBattle}
+ */
+function onEnemiesRemovedAll() {
+    this.enemies.clear();
+    this.elems.enemies.innerHTML = '';
 }
 
 

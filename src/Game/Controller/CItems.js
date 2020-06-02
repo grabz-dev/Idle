@@ -22,15 +22,8 @@ export default class CItems extends Controller {
                 this.data.itemsToHolders.set(item, holderName);
             }
             this.game.view.vItems.onEvent('itemsAdded', holder, holderName);
+            this.game.controller.cPlayer.calculateStats();
         }
-
-
-        if(!this.save.tutorial.givenStarterItems) {
-            addStarterItems.bind(this)();
-            this.save.tutorial.givenStarterItems = true;
-        }
-
-        this.game.controller.cPlayer.calculateStats();
     }
 
     /**
@@ -48,6 +41,7 @@ export default class CItems extends Controller {
         }
 
         if(holderName === 'backpack' && items.length + holder.length > this.data.items[holderName]) {
+            this.sortItems('backpack');
             handleBackpackOverfill.bind(this)();
         }
 
@@ -59,7 +53,7 @@ export default class CItems extends Controller {
                 break;
             }
 
-            item.attackTimer = 0;
+            item.reset();
             this.data.itemsToHolders.set(item, holderName);
             holder.push(item);
         }
@@ -75,6 +69,8 @@ export default class CItems extends Controller {
      * @param {'backpack'|'pouch'|'equipment'} holderName 
      */
     removeItems(items, holderName) {
+        items = [...items];
+
         /** @type {MItem[]|undefined} */
         let holder = this.save.items[holderName];
 
@@ -126,7 +122,7 @@ export default class CItems extends Controller {
                 continue;
             }
 
-            item.attackTimer = 0;
+            item.reset();
             this.data.itemsToHolders.set(item, holderName);
             this.save.items[oldHolderName].splice(this.save.items[oldHolderName].indexOf(item), 1);
             holder.push(item);
@@ -156,6 +152,9 @@ export default class CItems extends Controller {
             return;
         }
 
+        item1.reset();
+        item2.reset();
+
         this.data.itemsToHolders.set(item1, holderName2);
         this.data.itemsToHolders.set(item2, holderName1);
 
@@ -170,25 +169,27 @@ export default class CItems extends Controller {
         if(holderName1 === 'equipment' || holderName2 === 'equipment')
             this.game.controller.cPlayer.calculateStats();
     }
-}
 
-/**
- * @this {CItems}
- */
-function addStarterItems() {
-    this.addItems([
-        new MItem(MItem.Type.Armor, 5, 0, 0, 0), 
-        new MItem(MItem.Type.Armor, 5, 0, 0, 0),
-        new MItem(MItem.Type.Weapon, 0, 1, 1, 1)
-    ], 'backpack');
+    removeAllItems() {
+        for(let holderName of this.data.itemHolders) {
+            this.removeItems(this.save.items[holderName], holderName);
+        }
+    }
+
+    /**
+     * 
+     * @param {'backpack'|'pouch'|'equipment'} holderName
+     */
+    sortItems(holderName) {
+        this.save.items[holderName].sort((a, b) => b.getValue() - a.getValue());
+        this.game.view.vItems.onEvent('holderSorted', 'backpack');
+    }
 }
 
 /**
  * @this {CItems}
  */
 function handleBackpackOverfill() {
-    this.save.items.backpack.sort((a, b) => b.getValue() - a.getValue());
-
     /** @type {number[]} */
     var types = [];
 
@@ -218,5 +219,4 @@ function handleBackpackOverfill() {
     this.save.items.backpack.push(...newBackpack);
 
     this.game.view.vItems.onEvent('itemsRemoved', removed, 'backpack');
-    this.game.view.vItems.onEvent('holderSorted', 'backpack');
 }

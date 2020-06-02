@@ -18,13 +18,6 @@ export default class CPlayer extends Controller {
     }
 
     calculateStats() {
-        this.data.player.maxHealth = this.data.player.baseHealth;
-        for(let item of this.save.items.equipment) {
-            this.data.player.maxHealth += item.health;
-        }
-        if(this.save.player.curHealth > this.data.player.maxHealth)
-            this.save.player.curHealth = this.data.player.maxHealth;
-
         this.game.view.vPlayer.onEquipmentChanged();
     }
 }

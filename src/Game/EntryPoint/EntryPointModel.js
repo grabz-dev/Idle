@@ -1,14 +1,16 @@
 /** @typedef {import('./../Model/MEnemy').default} MEnemy */
 /** @typedef {import('./../Model/MItem').default} MItem */
 
+import MAccumulator from './../Model/MAccumulator.js';
+
 export default class EntryPointModel {
     constructor() {
         this.save = {
-            version: 1,
+            version: 2,
             timeElapsed: 0,
             timestamp: 0,
             tutorial: {
-                givenStarterItems: false
+
             },
             battle: {
                 enemies: /** @type {MEnemy[]} */([]),
@@ -17,14 +19,16 @@ export default class EntryPointModel {
                 velocity: 0,
                 velocityBest: 0,
             },
+            world: {
+                initialized: false,
+                level: 0,
+            },
             items: {
                 backpack: /** @type {MItem[]} */([]),
                 pouch: /** @type {MItem[]} */([]),
                 equipment: /** @type {MItem[]} */([])
             },
-            player: {
-                curHealth: 0
-            },
+            accumulator: new MAccumulator()
         };
 
         this.data = {
@@ -35,8 +39,6 @@ export default class EntryPointModel {
             battle: {
                 acceleration: 1.0, //per second
                 spawnOffset: 11,
-                attackRange: 10,
-                receiveRange: 1,
                 startingVelocity: 1.0,
             },
             itemHolders: /** @type {['backpack', 'pouch', 'equipment']} */(['backpack', 'pouch', 'equipment']),
@@ -52,7 +54,6 @@ export default class EntryPointModel {
             }
         };
 
-        this.save.player.curHealth = this.data.player.baseHealth;
         this.save.battle.velocity = this.data.battle.startingVelocity;
         this.save.timestamp = Date.now();
     }
@@ -67,7 +68,7 @@ export default class EntryPointModel {
         if(json == null) return;
 
         let save = JSON.parse(json);
-        compat(save);
+        save = compat(save);
         
         /** @type {({parent: any, childName: string}[])[]} */
         var arr = [];
@@ -88,10 +89,13 @@ export default class EntryPointModel {
 
 /**
  * Make the save compatible with the current version.
- * @param {any} object
+ * @param {any} save
+ * @returns {any}
  */
-function compat(object) {
-    
+function compat(save) {
+    if(save.version < 2)
+        save = {};
+    return save;
 }
 
 /**

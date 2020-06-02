@@ -56,7 +56,7 @@ export default class VItems extends View {
             if(elem == null) continue;
             let attackBar = elem.querySelector('.attack-bar');
             if(!(attackBar instanceof HTMLElement)) continue;
-            attackBar.style.transform = `translateX(-${item.attackTimer / (1 / item.attackSpeed) * 100}%)`;
+            attackBar.style.transform = `translateX(-${100 - item.attackTimer / (1 / item.attackSpeed) * 100}%)`;
         }
     }
 
@@ -106,6 +106,7 @@ export default class VItems extends View {
         case 'holderSorted': {
             /** @type {'backpack'|'pouch'|'equipment'} */ let holder = params[0];
             onHolderSorted.bind(this)(holder);
+            break;
         }
         }
     }
@@ -134,10 +135,12 @@ function onItemsAdded(items, holder) {
         this.itemHoldersToElems[holder].appendChild(elem);
 
         refreshValue(elem, item);
-        refreshAttribute(elem, item, 'health');
+        refreshAttribute(elem, item, 'tier');
+        refreshAttribute(elem, item, 'healthMax');
         refreshAttribute(elem, item, 'attack');
         refreshAttribute(elem, item, 'attackSpeed');
         refreshAttribute(elem, item, 'attackRange');
+        refreshAttribute(elem, item, 'attackAOE');
 
         //TODO
         let attackBar = elem.querySelector('.attack-bar');
@@ -158,15 +161,14 @@ function onItemsAdded(items, holder) {
 function onItemsRemoved(items, holder) {
     for(let item of items) {
         let elem = this.itemsToElems.get(item);
+        if(!elem) throw new Error('VItems.onItemsRemoved: elem not found');
 
         if(elem === this.itemHeld)
             dropItem.bind(this)();
 
         this.itemsToElems.delete(item);
-        if(elem) {
-            this.elemsToItems.delete(elem);
-            this.itemHoldersToElems[holder].removeChild(elem);
-        }
+        this.elemsToItems.delete(elem);
+        this.itemHoldersToElems[holder].removeChild(elem);
     }
 }
 
@@ -178,8 +180,7 @@ function onItemsRemoved(items, holder) {
 function onItemsMoved(items, holder) {
     for(let item of items) {
         let elem = this.itemsToElems.get(item);
-        if(elem == null)
-            continue;
+        if(!elem) throw new Error('VItems.onItemsMoved: elem not found');
         
         this.itemHoldersToElems[holder].appendChild(elem);
 
@@ -203,8 +204,9 @@ function onItemsMoved(items, holder) {
 function onHolderSorted(holderName) {
     for(let item of this.save.items[holderName]) {
         let elem = this.itemsToElems.get(item);
-        if(!elem || !elem.parentElement) continue;
-        
+        if(!elem) throw new Error('VItems.onHolderSorted: elem not found');
+        if(!elem.parentElement) throw new Error('VItems.onHolderSorted: elem.parentElement not found');
+
         elem.parentElement.appendChild(elem);
     }
 }
@@ -229,7 +231,7 @@ function refreshItemHeldPosition() {
  * @param {MItem} item
  */
 function refreshValue(elem, item) {
-    let e = elem.querySelector('[data-id=value');
+    let e = elem.querySelector('[data-id=value]');
     if(e instanceof HTMLElement) {
         e.textContent = Math.floor(item.getValue() * 10) / 10+'';
     }
@@ -239,7 +241,7 @@ function refreshValue(elem, item) {
  * 
  * @param {HTMLElement} elem
  * @param {MItem} item
- * @param {'health'|'attack'|'attackSpeed'|'attackRange'} attrib
+ * @param {'tier'|'healthMax'|'attack'|'attackSpeed'|'attackRange'|'attackAOE'} attrib
  */
 function refreshAttribute(elem, item, attrib) {
     let e = elem.querySelector(`[data-id=${attrib}]`);
@@ -262,13 +264,14 @@ function dropItem() {
         this.itemHeld.style.transform = '';
         this.itemHeld.style.pointerEvents = '';
         let item = this.elemsToItems.get(this.itemHeld);
-        if(item) {
-            let holderName = this.data.itemsToHolders.get(item);
-            if(holderName) {
-                this.itemHoldersToElems[holderName].appendChild(this.itemHeld);
-                onHolderSorted.bind(this)(holderName);
-            }
+        if(!item) throw new Error('VItems.dropItem: item not found');
+
+        let holderName = this.data.itemsToHolders.get(item);
+        if(holderName) {
+            this.itemHoldersToElems[holderName].appendChild(this.itemHeld);
+            onHolderSorted.bind(this)(holderName);
         }
+
         this.itemHeld = null;
     }
 }
@@ -316,12 +319,10 @@ function onClickHolder(e) {
     if(that.itemHeld != null && e.target != that.itemHeld) {
         e.stopPropagation();
         let item = that.elemsToItems.get(that.itemHeld);
-        if(item == null)
-            return;
+        if(!item) throw new Error('VItems.onClickHolder: item not found');
 
         let holderName = that.elemsToItemHolders.get(elem);
-        if(holderName == null)
-            return;
+        if(!holderName) throw new Error('VItems.onClickHolder: holderName not found');
 
         that.game.controller.cItems.moveItems([item], holderName);
         dropItem.bind(that)();

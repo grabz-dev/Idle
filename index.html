@@ -16,6 +16,7 @@
   <div id="wrap"></div>
   <div id="grass">
     <div id="dim"></div>
+    <div id="enemies"></div>
   </div>
 
   <div class="ui">
@@ -41,13 +42,52 @@
         <div class="child parent col top-1-2">
           <div id="clock">-:--</div>
         </div>
-        <div class="child parent row bottom-1-2">
-          <div id="enemies"></div>
-        </div>
+        <div class="child parent row bottom-1-2"></div>
       </div>
       <div class="child parent col right-1">
-        <div class="child parent col panel edge top-1-3">
-          <div class="child">Backpack</div>
+        <div class="child parent row top-1-3">
+          <div class="child parent col panel edge left-1-3-1">
+            <div class="child">Accumulator</div>
+            <div class="child parent row" id="accumulator">
+              <div class="container">
+                <div class="liquid" data-id="valueHeight"></div>
+                <div class="glass"></div>
+                <div class="text top" data-id="storageMax">0</div>
+                <div class="text middle" data-id="storageCur">0</div>
+                <div class="text bottom" data-id="storageMin">0</div>
+              </div>
+              <div class="info">
+                <div class="box">
+                  Tier<br><span data-id="tier">0</span>
+                </div>
+                <div class="box">
+                  iLvl<br><span data-id="ilvl">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="child parent col panel edge no-left left-1-3-2">
+            <div class="child">Forge</div>
+            <div class="child parent col" id="forge">
+              <div class="child parent row" id="forge">
+                <div class="child edge no-left no-top box">
+                  Tier:
+                  <select data-id="selectTier"><option value="0" selected>0</option></select>
+                </div>
+                <div class="child edge no-left no-top no-right box">
+                  iLvl:
+                  <select data-id="selectiLvl"><option value="0" selected>0</option></select>
+                </div>
+              </div>
+              <div class="child">
+                <button data-id="forgeWeapon">Forge <span data-id="forgeItemCount">0</span> weapons (Cost: <span data-id="forgeItemCost">0</span>)</button><br>
+                <button data-id="forgeArmor">Forge <span data-id="forgeItemCount">0</span> armors (Cost: <span data-id="forgeItemCost">0</span>)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="child parent col panel edge no-top middle-1-3">
+          <div class="child">Temporary Forge Box</div>
           <div class="child" id="backpack"></div>
         </div>
         <div class="child parent col panel edge no-top bottom-1-3">
