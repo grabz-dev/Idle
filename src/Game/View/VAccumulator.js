@@ -22,12 +22,10 @@ export default class VAccumulator extends View {
         this.elems = elems;
 
         this.cache = {
-            /** @type {number} */ ilvl: 0,
             /** @type {number} */ tier: 0,
         };
 
         this.selection = {
-            /** @type {number} */ ilvl: 0,
             /** @type {number} */ tier: 0,
         };
 
@@ -61,14 +59,6 @@ export default class VAccumulator extends View {
     }
 
     update() {
-        if(this.cache.ilvl !== this.save.accumulator.ilvl) {
-            let elem = this.elems.accumulator.querySelector('[data-id=ilvl]');
-            if(!elem) throw new Error('VAccumulator.update: [data-id=ilvl] missing');
-            this.cache.ilvl = this.save.accumulator.ilvl;
-            this.updateMax = true;
-            elem.textContent = this.cache.ilvl+'';
-        }
-
         if(this.cache.tier !== this.save.accumulator.tier) {
             let elem = this.elems.accumulator.querySelector('[data-id=tier]');
             if(!elem) throw new Error('VAccumulator.update: [data-id=tier] missing');
@@ -95,14 +85,6 @@ export default class VAccumulator extends View {
                 }
                 
             }
-            {
-                let elem = this.elems.forge.querySelector('[data-id=selectiLvl]');
-                if(!elem || !(elem instanceof HTMLElement)) throw new Error('VAccumulator.update: [data-id=selectiLvl] missing');
-                elem.innerHTML = '';
-                for(let i = 1; i <= this.cache.ilvl; i++) {
-                    elem.innerHTML += `<option value="${i}" ${i === this.cache.ilvl ? 'selected' : ''}>iLvl ${i}</option>`;
-                }
-            }
 
             this.onForgeSelectionChanged();
         }
@@ -114,15 +96,10 @@ export default class VAccumulator extends View {
             if(!elem || !(elem instanceof HTMLSelectElement)) throw new Error('VAccumulator.onForgeSelectionChanged: [data-id=selectTier] missing');
             this.selection.tier = +elem.value;
         }
-        {
-            let elem = this.elems.forge.querySelector('[data-id=selectiLvl]');
-            if(!elem || !(elem instanceof HTMLSelectElement)) throw new Error('VAccumulator.onForgeSelectionChanged: [data-id=selectiLvl] missing');
-            this.selection.ilvl = +elem.value;
-        }
 
 
-        let maxBuy = this.save.accumulator.getMaxBuy(this.selection.tier, this.selection.ilvl);
-        let itemCost = this.save.accumulator.getItemCost(this.selection.tier, this.selection.ilvl);
+        let maxBuy = this.save.accumulator.getMaxBuy(this.selection.tier);
+        let itemCost = this.save.accumulator.getItemCost(this.selection.tier);
 
         {
             let elems = this.elems.forge.querySelectorAll('[data-id=forgeItemCount]');
@@ -155,11 +132,11 @@ export default class VAccumulator extends View {
 
     onForgeWeaponClick() {
         this.onForgeSelectionChanged();
-        this.game.controller.cWorldArbiter.forgeItems(MItem.Type.Weapon, this.selection.tier, this.selection.ilvl, this.save.accumulator.getMaxBuy(this.tier, this.ilvl));
+        this.game.controller.cWorldArbiter.forgeItems(MItem.Type.Weapon, this.selection.tier, this.save.accumulator.getMaxBuy(this.selection.tier));
     }
     onForgeArmorClick() {
         this.onForgeSelectionChanged();
-        this.game.controller.cWorldArbiter.forgeItems(MItem.Type.Armor, this.selection.tier, this.selection.ilvl, this.save.accumulator.getMaxBuy(this.tier, this.ilvl));
+        this.game.controller.cWorldArbiter.forgeItems(MItem.Type.Armor, this.selection.tier, this.save.accumulator.getMaxBuy(this.selection.tier));
     }
 }
 

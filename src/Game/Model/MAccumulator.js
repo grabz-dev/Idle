@@ -10,30 +10,27 @@ export default class objMAccumulator extends Model {
     constructor(_path) {
         super(_path ?? 'MAccumulator.js');
         this.tier = 1;
-        this.ilvl = 1;
         this.value = 0;
     }
 
     getMaxStorage() {
-        return Math.pow(10, this.tier - 1) * Math.pow(10, this.ilvl) * 10;
+        return Math.pow(10, this.tier - 1);
     }
 
     /**
      * 
      * @param {number} tier 
-     * @param {number} ilvl 
      */
-    getItemCost(tier, ilvl) {
-        return Math.pow(10, this.tier - 1) * Math.pow(10, this.ilvl);
+    getItemCost(tier) {
+        return Math.pow(10, tier - 1);
     }
 
     /**
      * 
      * @param {number} tier 
-     * @param {number} ilvl 
      */
-    getMaxBuy(tier, ilvl) {
-        return Math.max(0, Math.min(10, this.value / this.getItemCost(tier, ilvl)));
+    getMaxBuy(tier) {
+        return Math.max(0, Math.min(10, this.value / this.getItemCost(tier)));
     }
 
     /**
@@ -42,7 +39,6 @@ export default class objMAccumulator extends Model {
     serialize() {
         return Object.assign(super.serialize(), {
             tier: this.tier,
-            ilvl: this.ilvl,
             value: this.value
         });
     }
@@ -52,7 +48,6 @@ export default class objMAccumulator extends Model {
      */
     deserialize(obj) {
         this.tier = obj.tier;
-        this.ilvl = obj.ilvl;
         this.value = obj.value;
     }
 }

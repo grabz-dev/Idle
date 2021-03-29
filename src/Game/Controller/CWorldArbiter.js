@@ -48,10 +48,7 @@ export default class CWorldArbiter extends Controller {
     step(newY) {
         this.save.world.level = Math.max(1, Math.floor(newY / 100));
 
-        let ilvl = Math.ceil(newY % 1000 / 100);
-        this.save.accumulator.ilvl = Math.max(this.save.accumulator.ilvl, ilvl);
-
-        let tier = Math.ceil(newY / 1000);
+        let tier = Math.ceil(newY / 100);
         this.save.accumulator.tier = Math.max(this.save.accumulator.tier, tier);
 
         /** @type {MEnemy[]} */
@@ -61,9 +58,9 @@ export default class CWorldArbiter extends Controller {
         for(let i = 0; i < tier; i++) {
             /** @type {MItem[]} */
             let items = [];
-            items[0] = generateItem(MItem.Type.Weapon, ilvl, tier);
-            items[1] = generateItem(MItem.Type.Armor, ilvl, tier);
-            items[2] = generateItem(MItem.Type.Armor, ilvl, tier);
+            items[0] = generateItem(MItem.Type.Weapon, tier);
+            items[1] = generateItem(MItem.Type.Armor, tier);
+            //items[2] = generateItem(MItem.Type.Armor, tier);
 
             let index = Utility.getRandomInt(0, arr.length);
             let enemy = new MEnemy(arr[index], newY + this.data.battle.spawnOffset, items);
@@ -76,17 +73,16 @@ export default class CWorldArbiter extends Controller {
     /**
      * @param {MItem.Type} type
      * @param {number} tier 
-     * @param {number} ilvl 
      * @param {number} amount 
      */
-    forgeItems(type, tier, ilvl, amount) {
-        this.save.accumulator.value -= this.save.accumulator.getItemCost(tier, ilvl) * amount;
+    forgeItems(type, tier, amount) {
+        this.save.accumulator.value -= this.save.accumulator.getItemCost(tier) * amount;
         this.game.view.vAccumulator.onAccumulatorAdded();
 
         /** @type {MItem[]} */
         let items = [];
         for(let i = 0; i < amount; i++) {
-            let item = generateItem(type, ilvl, tier);
+            let item = generateItem(type, tier);
             items.push(item);
         }
         this.game.controller.cItems.removeItems(this.save.items.backpack, 'backpack');
@@ -103,7 +99,7 @@ export default class CWorldArbiter extends Controller {
 
         let value = 0;
         for(let item of enemy.items) {
-            value += Math.pow(10, item.ilvl - 1);
+            value += Math.pow(10, item.tier - 1);
         }
 
         this.save.accumulator.value += value;
@@ -116,35 +112,34 @@ export default class CWorldArbiter extends Controller {
  */
 function addStarterItems() {
     this.game.controller.cItems.addItems([
-        new MItem(MItem.Type.Armor, 1, 1, 20, 0, 0, 0, 0), 
-        new MItem(MItem.Type.Armor, 1, 1, 20, 0, 0, 0, 0),
-        new MItem(MItem.Type.Weapon, 1, 1, 0, 2, 1, 0, 0)
+        new MItem(MItem.Type.Armor, 1, 20, 0, 0, 0, 0), 
+        new MItem(MItem.Type.Armor, 1, 20, 0, 0, 0, 0),
+        new MItem(MItem.Type.Weapon, 1, 0, 2, 1, 0, 0)
     ], 'backpack');
 }
 
 /**
  * @param {MItem.Type} type
- * @param {number} ilvl 
  * @param {number} tier
  * @returns {MItem} 
  */
-function generateItem(type, ilvl, tier) {
+function generateItem(type, tier) {
     switch(type) {
     case MItem.Type.None: {
-        return new MItem(type, ilvl, tier, 0, 0, 0, 0, 0);
+        return new MItem(type, tier, 0, 0, 0, 0, 0);
     }
     case MItem.Type.Weapon: {
-        return new MItem(type, ilvl, tier,
+        return new MItem(type, tier,
             0,
-            Math.ceil(ilvl * tier * roll(10, 0.9) * 5 + ilvl * tier),
+            Math.ceil(tier * roll(10, 0.9) * 5 + tier),
             Math.ceil(5 + 45 * roll(10, 0.9)) / 10,
             0,//Math.ceil(10 * roll(10, 0.5)),
             0,//Math.ceil(10 * roll(10, 0.9))
         );
     }
     case MItem.Type.Armor: {
-        return new MItem(type, ilvl, tier,
-            Math.ceil(ilvl * tier * roll(10, 0.9) * 100 + ilvl * tier),
+        return new MItem(type, tier,
+            Math.ceil(tier * roll(10, 0.9) * 100 + tier),
             0, 0, 0, 0
         );
     }

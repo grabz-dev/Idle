@@ -59,7 +59,7 @@ export default class CBattle extends Controller {
                         break;
                     
                     attacked = true;
-                    let healthLeft = Utility.damageItems(enemy.items, item.tier, damageLeft, -1);
+                    let healthLeft = Utility.damageItems(enemy.items, item.tier, damageLeft, 0);
                     this.game.view.vBattle.onEvent('enemiesDamaged', [enemy]);
 
                     if(healthLeft <= 0) {
@@ -98,7 +98,7 @@ export default class CBattle extends Controller {
                 if(item.attackTimer >= 1 / item.attackSpeed) {
                     item.attackTimer -= 1 / item.attackSpeed;
 
-                    let healthLeft = Utility.damageItems(this.save.items.equipment, item.tier, item.attack, 1);
+                    let healthLeft = Utility.damageItems(this.save.items.equipment, item.tier, item.attack, 0);
                     
                     this.game.view.vPlayer.onPlayerDamaged(item.attack);
                     if(healthLeft <= 0) {

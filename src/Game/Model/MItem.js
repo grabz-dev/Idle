@@ -6,7 +6,6 @@ export default class MItem extends Model {
     /**
      * 
      * @param {MItem.Type} type
-     * @param {number} ilvl
      * @param {number} tier
      * @param {number} health
      * @param {number} attack
@@ -15,11 +14,10 @@ export default class MItem extends Model {
      * @param {number} attackAOE
      * @param {string=} _path
      */
-    constructor(type, ilvl, tier, health, attack, attackSpeed, attackRange, attackAOE, _path) {
+    constructor(type, tier, health, attack, attackSpeed, attackRange, attackAOE, _path) {
         super(_path ?? 'MItem.js');
 
         this.type = type ?? MItem.Type.Armor;
-        this.ilvl = ilvl ?? 0;
         this.tier = tier ?? 0;
         this.healthMax = health ?? 0;
         this.healthCur = health ?? 0;
@@ -53,7 +51,6 @@ export default class MItem extends Model {
     serialize() {
         return Object.assign(super.serialize(), {
             type: this.type,
-            ilvl: this.ilvl,
             tier: this.tier,
             healthMax: this.healthMax,
             healthCur: this.healthCur,
@@ -69,7 +66,6 @@ export default class MItem extends Model {
      */
     deserialize(obj) {
         this.type = obj.type;
-        this.ilvl = obj.ilvl;
         this.tier = obj.tier;
         this.healthMax = obj.healthMax;
         this.healthCur = obj.healthCur;
